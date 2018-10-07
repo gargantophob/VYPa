@@ -22,7 +22,7 @@
 	<!-- ANTLR. -->
 	<property	name="antlr-path"		value="/pub/courses/vyp/antlr-4.7.1-complete.jar"/>
 	<property	name="antlr-class"		value="org.antlr.v4.Tool"/>
-	<property	name="antlr-grammar"	value="Log"/>
+	<property	name="antlr-grammar"	value="VYPlanguage"/>
 	<property	name="antlr-package"	value="parser"/>
 
 

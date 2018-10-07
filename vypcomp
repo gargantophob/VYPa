@@ -1,0 +1,14 @@
+#!/bin/sh
+if [[ $# -eq 0 ]]; then
+	echo "Input file unspecified.";
+	exit;
+fi
+
+input=$1;
+output="out.vc";
+
+if [[ $# -eq 2 ]]; then
+	output=$2;
+fi
+
+exec java -classpath 'cls:/pub/courses/vyp/antlr-4.7.1-complete.jar' main.Main;
