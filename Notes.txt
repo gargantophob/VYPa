@@ -14,7 +14,7 @@ Initialization:
 	git clone https://github.com/gargantophob/VYPa;
 
 Push:
-	git add *;
+	git add .;
 	git commit -m "Commit through Makefile";
 	git push;
 
