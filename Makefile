@@ -1,90 +1,19 @@
 #######################################
-# Compiler options
-git_init:
-	git init; git clone https://github.com/gargantophob/VYPa;
-git_push:
-	git add *; git commit -m "Commit through Makefile"; git push origin master;
-git_pull:
-	git pull;
+# Git cheatsheet
 
-PROG=evac
-CXX=g++
-CXXFLAGS=-std=c++14 -Wall -Wextra -pedantic  -I 3rdparty -O3 -MMD
+# Initialization:
+	# git init;
+	# git clone https://github.com/gargantophob/VYPa;
 
-# Sources and targets
-SRCDIR=src
-SRC=$(wildcard $(SRCDIR)/*.cpp)
-HDR=$(wildcard $(SRCDIR)/*.h)
-OBJ=$(patsubst %.cpp, %.o, $(SRC))
-DEP=$(patsubst %.o, %.d, $(OBJ))
+# Push:
+	# git add *;
+	# git commit -m "Commit through Makefile";
+	# git push origin master;
 
-DOCDIR = doc
-DOC = report.pdf
-DOX = Doxyfile
-ZIP = 07_xsemri00_xandri03.zip
+# Status:
+	# git checkout
 
-# Execution options
-OPT = ./experiments/D1.bmp -p 200 -t 0 -s 5 -r 1
-TEST_SH = exp.sh
+# Pull:
+	# git pull;
 
 #######################################
-# Primary rule
-all: $(PROG)
-
-# Generic rule
-$(PROG): $(OBJ)
-	$(CXX) $(CXXFLAGS) $^ -o $@
-
-# (this rule is implicit)
-#%.o: %.cpp %.h
-#	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-#######################################
-# Specific rules
-
-# Tidy up
-clean:
-	rm -f $(OBJ) $(PROG) $(DEP) $(DOC) $(ZIP) $(DOX) -r html;
-
-# Run executable
-run: $(PROG)
-	./$(PROG) $(OPT) 
-
-# Valgrind check
-valgrind: $(PROG)
-	valgrind --leak-check=full ./$(PROG) $(OPT)
-
-# Run experiments
-experiment: $(PROG) $(TEST_SH)
-	./$(TEST_SH)
-
-# Compile documentation
-documentation: $(DOCDIR)
-	make -C $(DOCDIR) && cp $(DOCDIR)/$(DOC) .;
-
-# Zip
-zip: $(SRCDIR) 3rdparty experiments Makefile $(DOC)
-	zip $(ZIP) -r $^
-
-# Set Doxygen generation up
-$(DOX):
-	doxygen -g $@
-	
-# Create Doxygen
-doxygen: $(DOX)
-	(cat $(DOX); echo "INPUT=src"; echo "JAVADOC_AUTOBRIEF=YES"; \
-		echo "GENERATE_LATEX=NO") | doxygen -
-
-#######################################
-# Shortcuts and dependencies
-
-c: clean
-r: run
-v: valgrind
-cr: clean run
-e: experiment
-d: documentation
-z: zip
-dz: documentation zip
-
--include $(DEP)
