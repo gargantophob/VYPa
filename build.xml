@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='utf-8'?>
+
+<project name="VYPa" basedir="." default="compile">
+	<description>
+		VYPa Project buildfile.
+		Author: xandri03@stud.fit.vutbr.cz
+	</description>
+
+	<!-- Directories. -->
+	<property	name="src.dir"	value="src"/>
+	<property	name="cls.dir"	value="cls"/>
+	<property	name="lib.dir"	value="lib"/>
+	<property	name="jar.dir"	value="jar"/>
+	<property	name="doc.dir"	value="doc"/>
+
+	<!-- Program entry point. -->
+	<property	name="main-package"	value="main"/>
+	<property	name="main-class"	value="Main"/>
+	<property	name="main-class.src"	value="${main-package}/${main-class}.java"/>
+	<property	name="main-class.cls"	value="${main-package}.${main-class}"/>
+	
+	<!-- ANTLR. -->
+	<property	name="antlr-lib"		value="antlr-4.7.1-complete.jar"/>
+	<property	name="antlr-class"		value="org.antlr.v4.Tool"/>
+	<property	name="antlr-grammar"	value="Log"/>
+	<property	name="antlr-package"	value="parser"/>
+
+
+
+	<!-- Targets -->
+
+	<!-- Clean all directories. -->
+	<target name="clean">
+		<delete dir="${cls.dir}"/>
+		<!-- <delete dir="${jar.dir}"/> -->
+		<delete dir="${doc.dir}"/>
+		<delete>
+			<fileset dir="${src.dir}/${antlr-package}" includes="**/*"/>
+		</delete>
+	</target>
+
+	<!-- Invoke antlr and construct the parser. -->
+	<target name="antlr">
+		<java
+			classname="${antlr-class}"
+			classpath="${lib.dir}/${antlr-lib}"
+		>
+			<arg value="${antlr-grammar}.g4"/>
+			<arg line="-package ${antlr-package}"/>
+			<arg line="-o ${src.dir}/${antlr-package}"/>
+			<arg value="-visitor"/>
+			<!-- <arg value="-no-listener"/> -->
+		</java>
+	</target>
+
+
+	<!-- Compile the program. -->
+	<target name="compile">
+		<mkdir dir="${cls.dir}"/>
+		<depend
+			srcdir="${src.dir}"
+			destdir="${cls.dir}"
+		/>
+		<javac
+			srcdir="${src.dir}"
+			destdir="${cls.dir}"
+			classpath="${lib.dir}/${antlr-lib}"
+			includeantruntime="true"
+			encoding="UTF-8"
+		>
+		</javac>
+	</target>
+
+	<!-- Run the program. -->
+	<target name="run" depends="compile">
+		<java
+			classname="${main-class.cls}"
+		>
+			<classpath>
+				<pathelement path="${cls.dir}"/>
+        		<pathelement path="${lib.dir}/${antlr-lib}"/>
+			</classpath>
+		</java>
+	</target>
+
+	<!-- Compile JAVADOC documentation. -->
+	<target name="doc">
+		<mkdir dir="${doc.dir}"/>
+		<javadoc
+			sourcepath="${src.dir}"
+			destdir="${doc.dir}"
+			protected="true"
+		/>
+	</target>
+
+</project>
