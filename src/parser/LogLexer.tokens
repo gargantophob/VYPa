@@ -1,0 +1,14 @@
+T__0=1
+T__1=2
+T__2=3
+T__3=4
+DATE=5
+TIME=6
+STRING=7
+CRLF=8
+WHITESPACE=9
+' '=1
+'ERROR'=2
+'INFO'=3
+'DEBUG'=4
+'\n'=9

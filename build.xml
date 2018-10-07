@@ -9,7 +9,7 @@
 	<!-- Directories. -->
 	<property	name="src.dir"	value="src"/>
 	<property	name="cls.dir"	value="cls"/>
-	<property	name="lib.dir"	value="lib"/>
+	<!-- <property	name="lib.dir"	value="lib"/> -->
 	<property	name="jar.dir"	value="jar"/>
 	<property	name="doc.dir"	value="doc"/>
 
@@ -20,7 +20,7 @@
 	<property	name="main-class.cls"	value="${main-package}.${main-class}"/>
 	
 	<!-- ANTLR. -->
-	<property	name="antlr-lib"		value="antlr-4.7.1-complete.jar"/>
+	<property	name="antlr-path"		value="/pub/courses/vyp/antlr-4.7.1-complete.jar"/>
 	<property	name="antlr-class"		value="org.antlr.v4.Tool"/>
 	<property	name="antlr-grammar"	value="Log"/>
 	<property	name="antlr-package"	value="parser"/>
@@ -43,7 +43,7 @@
 	<target name="antlr">
 		<java
 			classname="${antlr-class}"
-			classpath="${lib.dir}/${antlr-lib}"
+			classpath="${antlr-path}"
 		>
 			<arg value="${antlr-grammar}.g4"/>
 			<arg line="-package ${antlr-package}"/>
@@ -64,7 +64,7 @@
 		<javac
 			srcdir="${src.dir}"
 			destdir="${cls.dir}"
-			classpath="${lib.dir}/${antlr-lib}"
+			classpath="${antlr-path}"
 			includeantruntime="true"
 			encoding="UTF-8"
 		>
@@ -78,7 +78,7 @@
 		>
 			<classpath>
 				<pathelement path="${cls.dir}"/>
-        		<pathelement path="${lib.dir}/${antlr-lib}"/>
+        		<pathelement path="${antlr-path}"/>
 			</classpath>
 		</java>
 	</target>
