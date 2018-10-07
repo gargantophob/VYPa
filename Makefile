@@ -8,9 +8,10 @@
 # Push:
 	# git add *;
 	# git commit -m "Commit through Makefile";
-	# git push origin master;
+	# git push;
 
 # Status:
+	# git status
 	# git checkout
 
 # Pull:
