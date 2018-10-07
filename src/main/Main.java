@@ -37,5 +37,7 @@ public class Main {
 		// LogEntry entry = listener.entries.get(0);
 
 		System.out.println("Finished.");
+
+		System.exit(42);
 	}
 }

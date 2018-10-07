@@ -1,2 +1,2 @@
 all:
-	ant
+	ant antlr; ant compile;
