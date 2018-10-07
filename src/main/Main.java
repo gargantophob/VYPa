@@ -23,18 +23,16 @@ public class Main {
  			// System.out.println(error);
  		}*/
 
- 		String inputString ="2018-May-05 14:20:24 ERROR Bad thing happened\n";
- 		LogLexer lexer = new LogLexer(CharStreams.fromString(inputString));
+ 		String inputString ="class Lol : Object {}";
+ 		GrammarLexer lexer = new GrammarLexer(CharStreams.fromString(inputString));
  		CommonTokenStream tokens = new CommonTokenStream(lexer);
-		LogParser parser = new LogParser(tokens);
+		GrammarParser parser = new GrammarParser(tokens);
 		
 		ParseTreeWalker walker = new ParseTreeWalker();
 
-		LogListener listener = new LogListener();
-		ParseTree tree = parser.log();
+		GrammarListener listener = new GrammarListener();
+		ParseTree tree = parser.program();
 		walker.walk(listener, tree);
-
-		// LogEntry entry = listener.entries.get(0);
 
 		System.out.println("Finished.");
 
