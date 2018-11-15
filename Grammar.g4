@@ -89,6 +89,6 @@ This	:	'this';
 Void	:	'void';
 While	:	'while';
 
-Identifier	:	Letter	(Letter | Digit)+;
+Identifier	:	Letter	(Letter | Digit)*;
 IntegerLiteral	: Zero | Nonzero Digit*;
 StringLiteral	:	'"' (StringCharacter)* '"';

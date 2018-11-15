@@ -1,0 +1,5 @@
+class Lol : Object {
+	int y ;
+}
+
+class Lol2 : Object {}

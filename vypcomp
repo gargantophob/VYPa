@@ -11,4 +11,4 @@ if [[ $# -eq 2 ]]; then
 	output=$2;
 fi
 
-exec java -classpath 'cls:/pub/courses/vyp/antlr-4.7.1-complete.jar' main.Main;
+exec java -classpath 'cls:/pub/courses/vyp/antlr-4.7.1-complete.jar' main.Main $input $output;

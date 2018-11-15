@@ -13,6 +13,9 @@
 	<property	name="jar.dir"	value="jar"/>
 	<property	name="doc.dir"	value="doc"/>
 
+	<property	name="input.file"	value="input"/>
+	<property	name="output.file"	value="output"/>
+
 	<!-- Program entry point. -->
 	<property	name="main-package"	value="main"/>
 	<property	name="main-class"	value="Main"/>
@@ -74,12 +77,15 @@
 	<!-- Run the program. -->
 	<target name="run" depends="compile">
 		<java
-			classname="${main-class.cls}"
+			classname="${main-class.cls}" fork="true"
 		>
 			<classpath>
 				<pathelement path="${cls.dir}"/>
         		<pathelement path="${antlr-path}"/>
 			</classpath>
+			<jvmarg value="-ea"/>
+			<arg value="${input.file}"/>
+			<arg value="${output.file}"/>
 		</java>
 	</target>
 
