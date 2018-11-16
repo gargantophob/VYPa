@@ -9,27 +9,27 @@ functionDefinition	:	type Identifier '(' paramList ')' blockStatement;
 paramList		:	Void | formalParameter (',' formalParameter)*;
 formalParameter	:	type name;
 
-classDefinition	:	Class Identifier ':' Identifier '{' (variableDefinition | functionDefinition)* '}' ;
+classDefinition	:	Class Identifier ':' Identifier '{' (variableDeclaration | functionDefinition)* '}' ;
 
-variableDefinition	:	type name (',' name)* ';' ;
+variableDeclaration	:	type name (',' name)* ';' ;
 name	:	Identifier;
 
-statement	:	variableDefinition | assignment | conditional
-				| iteration | functionCall | methodCall | returnStatement ;
+statement	:	variableDeclaration | assignment | conditional
+				| iteration | functionCall | returnStatement ;
 
-assignment	:	Identifier '=' ex ';' ;
+assignment	:	variable '=' ex ';' ;
 blockStatement	:	'{' statement* '}';
 conditional	:	If '(' ex ')' blockStatement Else blockStatement;
 iteration	:	While '(' ex ')' blockStatement;
 returnStatement	:	Return ex? ';';
 
-functionCall	:	Identifier '(' exList ')' ';';
-methodCall	:	contextObject '.' Identifier '(' exList ')' ';';
+functionCall	:	(Identifier | callee) '(' exList ')' ';';
+callee	: (This | Super | Identifier) '.' Identifier;
+
 exList :	(ex (',' ex)*)?;
-contextObject	:	This | Super | Identifier;
 
 ex	:	value | objectCreation | '(' ex ')' | casting
-				| functionCall | methodCall | '!' ex | ex '*' ex | ex '/' ex
+				| functionCall | '!' ex | ex '*' ex | ex '/' ex
 				| ex '+' ex | ex '-' ex
 				| ex '<' ex | ex '>' ex | ex '<=' ex | ex '>=' ex
 				| ex '==' ex | ex '!=' ex | ex '&&' ex | ex '||' ex;
