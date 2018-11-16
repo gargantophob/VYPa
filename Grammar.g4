@@ -2,22 +2,17 @@ grammar Grammar;
 
 /* Parser Rules */
 
-primType	:	Int | String;
-objectType	:	Identifier;
-dataType	:	primType | objectType;
-voidType	:	Void;
-type		: dataType | voidType;
+type	:	Void | Int | String | Identifier;
 
-program	:	globalDefinition*;	/* whether main() exists will be a semantic check */
-globalDefinition	:	functionDefinition | classDefinition;
-
+program	:	(functionDefinition | classDefinition)*;
 functionDefinition	:	type Identifier '(' paramList ')' blockStatement;
-paramList	:	voidType | formalParameter (',' formalParameter)*;
-formalParameter	:	dataType Identifier;
+paramList		:	Void | formalParameter (',' formalParameter)*;
+formalParameter	:	type name;
 
-classDefinition	:	Class objectType ':' objectType '{' fieldDefinition* '}' ;
-fieldDefinition	:	variableDefinition | functionDefinition;
-variableDefinition	:	dataType Identifier (',' Identifier)* ';' ;
+classDefinition	:	Class Identifier ':' Identifier '{' (variableDefinition | functionDefinition)* '}' ;
+
+variableDefinition	:	type name (',' name)* ';' ;
+name	:	Identifier;
 
 statement	:	variableDefinition | assignment | conditional
 				| iteration | functionCall | methodCall | returnStatement ;
@@ -45,8 +40,8 @@ variable	:	localVariable | instanceVariable;
 localVariable	:	Identifier | This;
 instanceVariable	:	localVariable '.' Identifier;
 
-objectCreation	:	New objectType ;
-casting	:	'(' objectType ')' ex;
+objectCreation	:	New Identifier ;
+casting	:	'(' Identifier ')' ex;
 
 /*
 not	:	'!' ex;

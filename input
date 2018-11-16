@@ -1,5 +1,15 @@
 class Lol : Object {
-	int y ;
+	int y,z;
+	void foo(void) {}
 }
 
 class Lol2 : Object {}
+
+void foo(void) {
+	int x;
+	x = 23; x = x - 13;
+}
+
+int foo(int a) {
+	return a;
+}
