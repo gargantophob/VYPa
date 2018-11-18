@@ -1,13 +1,26 @@
-void foo(void) {
+class Lol : Object {
+	int a,b;
+	c2 a;
+	void foo(int a) {
+		return;
+	}
+}
+
+class c2: Lol {
+	
+}
+
+void foo(int foo, string b, Lol c) {
 	int x;
+	int Lol;
 	x = 23 + "loool";
 	x = !(2 + 2 * 2);
 	foo(x, 23+23);
 }
 
-int bar(void) {
+c2 bar(void) {
 	int a;
-	foo(2+2, 2-2, !a);
+	foo((int)2+2, 2-2, !a);
 	return a;
 }
 

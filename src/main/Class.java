@@ -1,34 +1,65 @@
 package main;
 
-import parser.*;
-import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.tree.*;
-
 import java.util.List;
 import java.util.ArrayList;
 
 public class Class {
+    public parsed.Class prototype;
+
     public String name;
-    public String baseClass;
-    public List<Variable> attributes;
-    public List<Function> methods;
+    public Class base;
 
-    public Class(GrammarParser.ClassDefinitionContext ctx) {
-        name = ctx.name().get(0).getText();
-        baseClass = ctx.name().get(1).getText();
+    /*public List<Variable> attributes;
+    public List<Function> methods;*/
 
-        attributes = new ArrayList<>();
-        ctx.variableDeclaration().forEach(attributeDefinition ->
-            Statement.recognize(attributeDefinition).forEach(st -> attributes.add(st.variable))
-        );
+    public Scope scope;
+
+    public Class(String name, Class base, List<Variable> attributes, List<Function> methods) {
+        prototype = null;
+
+        this.name = name;
+        this.base = base;
+
+        scope = new Scope(base.scope);
+        scope.variableInitialize();
+        scope.functionInitialize();
         
-        methods = new ArrayList<>();
-        ctx.functionDefinition().forEach(functionDefinition ->
-            methods.add(Function.recognize(functionDefinition))
-        );
+        attributes.forEach(v -> scope.variableRegister(v));
+        methods.forEach(f -> scope.functionRegister(f));
     }
 
-    @Override
+    public Class(parsed.Class prototype) {
+        this.prototype = prototype;
+        name = prototype.name;
+        base = null;
+        attributes = null;
+        methods = null;
+    }
+
+    public void lookUpBase() {
+        if(prototype == null) {
+            return;
+        }
+        if(name.equals(prototype.baseName)) {
+            Recover.exit(3, "class " + name + " has itself as its base");
+        }
+        base = ClassTable.lookUp(prototype.baseName);
+    }
+
+    public void collectDefinitions() {
+        if(prototype == null) {
+            return;
+        }
+
+        attributes = new VariableTable(null);
+        prototype.attributes.forEach(a -> attributes.register(new Variable(a)));
+
+        // TODO collect methods
+        methods = new FunctionTable();
+        prototype.methods.forEach(m -> methods.register(new Function(m, this)));
+    }
+
+    /*@Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(name + " : " + baseClass + ". ");
@@ -40,5 +71,5 @@ public class Class {
         methods.forEach(m -> sb.append(m + ", "));
 
         return sb.toString();
-    }
+    }*/
 }

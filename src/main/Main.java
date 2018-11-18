@@ -67,7 +67,8 @@ public class Main {
         checkSyntacticErrors(parser);
 
         // Translate
-        Program p = new Program(parser);
+        parsed.Program parsed = new parsed.Program(parser);
+        Program p = new Program(parsed);
         String output = "TODO";
 
         // Store output

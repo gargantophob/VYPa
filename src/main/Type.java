@@ -1,52 +1,42 @@
 package main;
 
-import parser.*;
-import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.tree.*;
-
 import java.util.List;
 import java.util.ArrayList;
 
 public class Type {
-
-    static enum TypeType {
+	public static enum Option {
         VOID, INT, STRING, OBJECT;
     }
 
-    public TypeType type;
-    public String object;
+    public Option option;
+    public Class classRef;
 
-    public Type(TypeType type, String object) {
-        this.type = type;
-        this.object = object;
-    }
-
-    public static Type recognize(GrammarParser.TypeContext ctx) {
-        TypeType type = null;
-        String object = null;;
-
-        String txt = ctx.getText();
-        if(txt.equals("void")) {
-            type = TypeType.VOID;
-        } else if(txt.equals("int")) {
-            type = TypeType.INT;
-        } else if(txt.equals("string")) {
-            type = TypeType.STRING;
+    public Type(parsed.Type ref) {
+        String str = ref.type;
+    	if(str.equals("void")) {
+            option = Option.VOID;
+        } else if(str.equals("int")) {
+            option = Option.INT;
+        } else if(str.equals("string")) {
+            option = Option.STRING;
         } else {
-            type = TypeType.OBJECT;
-            object = txt;
+            option = Option.OBJECT;
+            classRef = ClassTable.lookUp(str);
         }
-
-        return new Type(type, object);
     }
-    
-    @Override
+
+    /*@Override
     public String toString() {
-        if(type == TypeType.OBJECT) {
-            return object;
+    	if(option == Option.OBJECT) {
+            return className;
         } else {
-            return type.toString();
+            return option.toString();
         }
+    }*/
+
+    public void assertNonVoid() {
+    	if(option == Option.VOID) {
+    		Recover.exit(3, "unexpected void type");
+    	}
     }
 }
-

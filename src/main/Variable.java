@@ -11,27 +11,15 @@ public class Variable {
         this.type = type;
         this.name = name;
     }
+
+    public Variable(parsed.Variable ref) {
+        type = new Type(ref.type);
+        type.assertNonVoid();
+        name = ref.name;
+    }
     
-    @Override
+    /*@Override
     public String toString() {
         return type + " " + name;
-    }
-
-    public void assertVoid() {
-        if(type.type == Type.TypeType.VOID) {
-            Recover.exit(3, "variable of type void");
-        }
-    }
-
-    public void assertObject() {
-        if(type.type == Type.TypeType.OBJECT) {
-            Recover.notImplemented();
-        }
-    }
-
-    public void assertDefineteness(Scope scope) {
-        if(scope.isDefinedSymbol(name) || scope.isDefinedVariableHere(name)) {
-            Recover.exit(3, "redefinition of symbol " + name);
-        }
-    }
+    }*/
 }

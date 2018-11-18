@@ -1,9 +1,5 @@
 package main;
 
-import parser.*;
-import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.tree.*;
-
 import java.util.List;
 import java.util.ArrayList;
 
@@ -12,9 +8,17 @@ public class Literal {
     public int intValue;
     public String stringValue;
 
-    public Literal(int value) {
-        isInteger = true;
-        intValue = value;
+    public Literal(boolean isInteger, String text) {
+        this.isInteger = isInteger;
+        if(isInteger) {
+            try {
+                intValue = Integer.parseInt(text);
+            } catch(NumberFormatException e) {
+                Recover.exit(99, "Something went wrong...");
+            }
+        } else {
+            stringValue = text.substring(1, text.length()-1);
+        }
     }
 
     public Literal(String value) {
@@ -22,27 +26,12 @@ public class Literal {
         stringValue = value;
     }
 
-    public static Literal recognize(GrammarParser.LiteralContext ctx) {
-        Token token = (Token) ctx.getChild(0).getPayload();
-        String text = token.getText();
-        if(token.getType() == GrammarParser.IntegerLiteral) {
-            try {
-                return new Literal(Integer.parseInt(text));
-            } catch(NumberFormatException e) {
-                System.err.println("Something went wrong...");
-                return null;
-            }
-        } else {
-            return new Literal(text.substring(1, text.length()-1));
-        }
-    }
-
-    @Override
+    /*@Override
     public String toString() {
         if(isInteger) {
             return "" + intValue;
         } else {
-            return stringValue;
+            return "\"" + stringValue + "\"";
         }
-    }
+    }*/
 }

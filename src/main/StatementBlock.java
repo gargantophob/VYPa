@@ -1,32 +1,27 @@
 package main;
 
-import parser.*;
-import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.tree.*;
-
 import java.util.List;
 import java.util.ArrayList;
 
 import java.util.Map;
 import java.util.HashMap;
 
-public class StatementBlock implements Scope {
+public class StatementBlock /*implements Scope*/ {
     public List<Statement> statements;
     
-    public Scope parentScope;
-    public List<String> names;
+    /*public Scope parentScope;
+    public List<String> names;*/
 
     public StatementBlock(List<Statement> statements) {
         this.statements = statements;
     }
 
-    public static StatementBlock recognize(GrammarParser.BlockStatementContext ctx) {
-        List<Statement> statements = new ArrayList<>();
-        ctx.statement().forEach(s -> statements.addAll(Statement.recognize(s)));
-        return new StatementBlock(statements);
-    }
+    /*@Override
+    public String toString() {
+        return statements.toString();
+    }*/
 
-    public void collectDeclarations(Scope parentScope) {
+    /*public void assertDefineteness(Scope parentScope) {
         this.parentScope = parentScope;
         names = new ArrayList<>();
         for(int i = 0; i < statements.size(); i++) {
@@ -47,12 +42,12 @@ public class StatementBlock implements Scope {
                     break;
                 case CONDITIONAL:
                     s.expression.assertDefineteness(this);
-                    s.body.collectDeclarations(this);
-                    s.bodyElse.collectDeclarations(this);
+                    s.body.assertDefineteness(this);
+                    s.bodyElse.assertDefineteness(this);
                     break;
                 case ITERATION:
                     s.expression.assertDefineteness(this);
-                    s.body.collectDeclarations(this);
+                    s.body.assertDefineteness(this);
                     break;
                 case CALL:
                     s.call.assertDefineteness(this);
@@ -64,9 +59,9 @@ public class StatementBlock implements Scope {
                     break;
             }
         }
-    }
+    }*/
 
-    @Override
+    /*@Override
     public boolean isDefinedVariableHere(String name) {
         return names.contains(name);
     }
@@ -84,15 +79,5 @@ public class StatementBlock implements Scope {
     @Override
     public boolean isDefinedClass(String name) {
         return parentScope.isDefinedClass(name);
-    }
-
-    @Override
-    public boolean isDefinedSymbol(String name) {
-        return parentScope.isDefinedSymbol(name);
-    }
-
-    @Override
-    public String toString() {
-        return statements.toString();
-    }
+    }*/
 }
