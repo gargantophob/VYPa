@@ -1,0 +1,24 @@
+Return codes:
+0 = success
+1 = error during its lexical analysis (e.g. bad structure of the current lexeme).
+2 = error during its syntactic analysis (e.g. bad program syntax).
+3 = error during the semantic analysis and checks of the type incompatibility.
+4 = error during the rest of semantic checks (e.g. missing definition, multiple definition, etc.).
+5 = error during the target code generation (e.g. not enough statically allocated memory).
+9 = internal compiler error such as errors not influenced by the input program (e.g. not enough memory for the translation structures, failure to open input/output files, etc.).
+
+It is not possible to define a variable of the same name as some defined function/class or variable defined in the same block.
+
+Multiple definitions of variable with the same name in the same scope are forbidden.
+
+- string literals
+
+Every function has to be defined exactly once.
+
+Every program in VYPlanguage has to contain exactly one main function named main with the type signature void main \( void \), otherwise a semantic error occurs
+
+A method of the same name as the class returning void and without parameters is called constructor. There is one embedded class called Object as the root of the inheritance hierarchy.
+
+It is not allowed to define a variable of the same name as some defined method in the same class.
+
+It is not possible to define a local variable of the same name as some defined function/class or variable defined in the same block.

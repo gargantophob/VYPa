@@ -17,7 +17,7 @@ public class Main {
                 int line, int charPositionInLine, String msg,
                 RecognitionException e
             ) {
-                Recover.exit(43, "line " + line + ":" + charPositionInLine + " " + msg);
+                Recover.exit(1, "line " + line + ":" + charPositionInLine + " " + msg);
             }
         };
         
@@ -35,7 +35,7 @@ public class Main {
                 int line, int charPositionInLine, String msg,
                 RecognitionException e
             ) {
-                Recover.exit(43, "line " + line + ":" + charPositionInLine + " " + msg);
+                Recover.exit(2, "line " + line + ":" + charPositionInLine + " " + msg);
             }
         };
 
@@ -53,7 +53,7 @@ public class Main {
         try{
             input = new ANTLRFileStream(args[0]);
         } catch (java.io.IOException e) {
-            Recover.exit(42, "cannot read input file");
+            Recover.exit(9, "cannot read input file");
         }
 
         // Lexical analysis
@@ -67,14 +67,14 @@ public class Main {
         checkSyntacticErrors(parser);
 
         // Translate
-        Program program = new Program(parser);
-        String output = program.translated();
+        Program p = new Program(parser);
+        String output = "TODO";
 
         // Store output
         try (PrintStream out = new PrintStream(new FileOutputStream(args[1]))) {
 		    out.print(output);
 		} catch(java.io.FileNotFoundException e) {
-			Recover.exit(42, "cannot open output file");
+			Recover.exit(9, "cannot open output file");
 		}
 
 		// Success
