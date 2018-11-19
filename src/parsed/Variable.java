@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Variable {
+    
     public Type type;
     public String name;
     
@@ -18,13 +19,13 @@ public class Variable {
 
     public static List<Variable> recognize(GrammarParser.VariableDeclarationContext ctx) {
         List<Variable> list = new ArrayList<>();
-        Type type = Type.recognize(ctx.type());
+        Type type = new Type(ctx.type());
         ctx.name().forEach(name -> list.add(new Variable(type, name.getText())));
         return list;
     }
     
-    @Override
+    /*@Override
     public String toString() {
         return type + " " + name;
-    }
+    }*/
 }

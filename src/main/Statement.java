@@ -20,8 +20,8 @@ public class Statement {
     
     public Call call;
 
-    public Statement(parsed.Statement parsed, Scope scope) {
-        switch(parsed.option) {
+    public Statement(parsed.Statement parsed, SymbolTable<Variable> scope) {
+        /*switch(parsed.option) {
             case DECLARATION:
                 option = Option.DECLARATION;
                 variable = new Variable(parsed.variable);
@@ -29,7 +29,7 @@ public class Statement {
                 break;
             case ASSIGNMENT:
                 option = Option.ASSIGNMENT;
-                path = new Path(parsed.path.path, scope);
+                path = new Path(parsed.path, scope);
                 expression = null; // TODO;
                 break;
             case CONDITIONAL:
@@ -51,20 +51,6 @@ public class Statement {
                 option = Option.RETURN;
                 expression = null; // TODO
                 break;
-        }
-
+        }*/
     }
-
-    /*@Override
-    public String toString() {
-        switch(option) {
-            case DECLARATION: return variable.toString();
-            case ASSIGNMENT: return path + " = " + expression;
-            case CONDITIONAL: return "if(" + expression + ") { " + body + "} else { " + bodyElse + "}";
-            case ITERATION: return "while(" + expression + ") { " + body + "}";
-            case CALL: return call.toString();
-            case RETURN: return "return " + expression + ";";
-        }
-        return null;
-    }*/
 }

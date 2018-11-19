@@ -1,13 +1,14 @@
 class A : Object {
-	int index;
+	int a;
+	int b;
 
-	void foo(void) {}
+	void c(void) {}
 }
 
 class B : A {
-	A a;
+	A e;
 
-	A foo(B a) {
+	void c(int a) {
 		this.a = 23;
 		main();
 	}
@@ -18,4 +19,9 @@ void main(void) {
 	B b;
 	b.a.index = 23;
 	b.a.bar();
+}
+
+void main2(int a, int b) {
+	int a;
+	int a;
 }

@@ -8,38 +8,28 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Function {
+    
     public Type type;
     public String name;
     public List<Variable> parameters;
     public List<Statement> body;
 
-    public Function(
-        Type type, String name, List<Variable> parameters, List<Statement> body
-    ) {
-        this.type = type;
-        this.name = name;
-        this.parameters = parameters;
-        this.body = body;
-    }
-
-    public static Function recognize(GrammarParser.FunctionDefinitionContext ctx) {
-        Type type = Type.recognize(ctx.type());
-        String name = ctx.name().getText();
-        List parameters = new ArrayList<>();
+    public Function (GrammarParser.FunctionDefinitionContext ctx) {
+        type = new Type(ctx.type());
+        name = ctx.name().getText();
+        parameters = new ArrayList<>();
         ctx.paramList().formalParameter().forEach(par -> 
-            parameters.add(new Variable(Type.recognize(par.type()), par.name().getText()))
+            parameters.add(new Variable(new Type(par.type()), par.name().getText()))
         );
-        List<Statement> body = Statement.recognize(ctx.blockStatement());
-        return new Function(type, name, parameters, body);
+        body = Statement.recognize(ctx.block());
     }
 
-    @Override
+    /*@Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(type + " " + name + " (");
         parameters.forEach(p -> sb.append(p + ", "));
         sb.append(") { " + body.toString() + "}");
         return sb.toString();
-    }
-
+    }*/
 }

@@ -19,8 +19,8 @@ public class Statement {
     public Path path;
     public Expression expression;
     
-    public StatementBlock body;
-    public StatementBlock bodyElse;
+    public List<Statement> body;
+    public List<Statement> bodyElse;
     
     public Call call;
 
@@ -35,14 +35,14 @@ public class Statement {
         this.expression = expression;
     }
 
-    public Statement(Expression expression, StatementBlock body, StatementBlock bodyElse) {
+    public Statement(Expression expression, List<Statement> body, List<Statement> bodyElse) {
         option = Option.CONDITIONAL;
         this.expression = expression;
         this.body = body;
         this.bodyElse = bodyElse;
     }
 
-    public Statement(Expression expression, StatementBlock body) {
+    public Statement(Expression expression, List<Statement> body) {
         option = Option.ITERATION;
         this.expression = expression;
         this.body = body;
@@ -58,58 +58,53 @@ public class Statement {
         this.expression = expression;
     }
 
-    public static List<Statement> recognize(GrammarParser.BlockStatementContext ctx) {
-        List<Statement> statements = new ArrayList<>();
-        ctx.statement().forEach(s -> statements.addAll(Statement.recognize(s)));
-        return statements;
+    public static List<Statement> recognize(GrammarParser.BlockContext ctx) {
+        List<Statement> list = new ArrayList<>();
+        ctx.statement().forEach(s -> list.addAll(Statement.recognize(s)));
+        return list;
     }
 
     public static List<Statement> recognize(GrammarParser.StatementContext ctx) {
         List<Statement> list = new ArrayList<>();
-        switch(((RuleContext) ctx.getChild(0)).getRuleIndex()) {
-            case GrammarParser.RULE_variableDeclaration:
-                Variable.recognize(ctx.variableDeclaration()).forEach(var -> list.add(new Statement(var)));
-                break;
-            case GrammarParser.RULE_assignment:
-                list.add(new Statement(
-                    Path.recognize(
-                        ctx.assignment().variable()), Expression.recognize(ctx.assignment().ex()
-                    )
-                ));
-                break;
-            case GrammarParser.RULE_conditional:
-                List<GrammarParser.BlockStatementContext> blocks = ctx.conditional().blockStatement();
-                list.add(new Statement(
-                    Expression.recognize(ctx.conditional().ex()),
-                    StatementBlock.recognize(blocks.get(0)),
-                    StatementBlock.recognize(blocks.get(1))
-                ));
-                break;
-            case GrammarParser.RULE_iteration:
-                list.add(new Statement(
-                    Expression.recognize(ctx.iteration().ex()),
-                    StatementBlock.recognize(ctx.iteration().blockStatement())
-                ));
-                break;
-            case GrammarParser.RULE_call:
-                list.add(new Statement(Call.recognize(ctx.call())));
-                break;
-            case GrammarParser.RULE_returnStatement:
-                Expression expression = null;
-                GrammarParser.ExContext exContext = ctx.returnStatement().ex();
-                if(exContext != null) {
-                    expression = Expression.recognize(exContext);
-                }
-                list.add(new Statement(expression));
-                break;
-            default: // !
-                main.Recover.warn("!");
-                break;
+        if(ctx.variableDeclaration() != null) {
+            Variable.recognize(ctx.variableDeclaration()).forEach(v -> list.add(new Statement(v)));
+            return list;
         }
+
+        Statement s;
+        if(ctx.assignment() != null) {
+            s = new Statement(
+                new Path(ctx.assignment().path()), new Expression(ctx.assignment().ex())
+            );
+        } else if(ctx.conditional() != null) {
+            s = new Statement(
+                new Expression(ctx.conditional().ex()),
+                Statement.recognize(ctx.conditional().block().get(0)),
+                Statement.recognize(ctx.conditional().block().get(1))
+            );
+        } else if(ctx.iteration() != null) {
+            s = new Statement(
+                new Expression(ctx.iteration().ex()),
+                Statement.recognize(ctx.iteration().block())
+            );
+        } else if(ctx.call() != null) {
+            s = new Statement(new Call(ctx.call()));
+        } else if(ctx.returnStatement() != null) {
+            Expression expression = null;
+            if(ctx.returnStatement().ex() != null) {
+                expression = new Expression(ctx.returnStatement().ex());
+            }
+            s = new Statement(expression);
+        } else {
+            main.Recover.warn("!");
+            return null;
+        }
+
+        list.add(s);
         return list;
     }
 
-    @Override
+    /*@Override
     public String toString() {
         switch(option) {
             case DECLARATION: return variable.toString();
@@ -120,6 +115,5 @@ public class Statement {
             case RETURN: return "return " + expression + ";";
         }
         return null;
-    }
-
+    }*/
 }

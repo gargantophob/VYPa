@@ -8,19 +8,15 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Path {
-    public List<String> path;
     
-    public Path(List<String> path) {
-        this.path = path;
+    public List<String> names;
+    
+    public Path(GrammarParser.PathContext ctx) {
+        names = new ArrayList<>();
+        ctx.atomicPath().forEach(ap -> names.add(ap.getText()));
     }
 
-    public static Path recognize(GrammarParser.VariableContext ctx) {
-        List<String> path = new ArrayList<>();
-        ctx.atomicVariable().forEach(av -> path.add(av.getText()));
-        return new Path(path);
-    }
-
-    @Override
+    /*@Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(path.get(0));
@@ -28,5 +24,5 @@ public class Path {
             sb.append('.' + path.get(i));
         }
         return sb.toString();
-    }
+    }*/
 }

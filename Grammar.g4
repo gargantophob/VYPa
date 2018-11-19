@@ -4,28 +4,27 @@ grammar Grammar;
 
 type	:	Void | Int | String | name;
 name	:	Id;
+atomicPath	:	This | name;
+path	:	atomicPath ('.' atomicPath)*;
 
 program	:	(functionDefinition | classDefinition)*;
 
-functionDefinition	:	type name '(' paramList ')' blockStatement;
+functionDefinition	:	type name '(' paramList ')' block;
 paramList		:	Void | formalParameter (',' formalParameter)*;
 formalParameter	:	type name;
 
 classDefinition	:	Class name ':' name '{' (variableDeclaration | functionDefinition)* '}';
 variableDeclaration	:	type name (',' name)* ';';
 
-statement	:	variableDeclaration | assignment | conditional
-				| iteration | call | returnStatement ;
+statement	:	variableDeclaration | assignment | conditional | iteration | call | returnStatement ;
 
-assignment	:	variable '=' ex ';' ;
-blockStatement	:	'{' statement* '}';
-conditional	:	If '(' ex ')' blockStatement Else blockStatement;
-iteration	:	While '(' ex ')' blockStatement;
+assignment	:	path '=' ex ';' ;
+block	:	'{' statement* '}';
+conditional	:	If '(' ex ')' block Else block;
+iteration	:	While '(' ex ')' block;
 returnStatement	:	Return ex? ';';
 
-atomicVariable	:	This | name;
-variable	:	atomicVariable ('.' atomicVariable)*;
-call	:	((Super | variable) '.')? name '(' (ex (',' ex)*)? ')' ';';
+call	:	((Super | path ) '.')? name '(' (ex (',' ex)*)? ')' ';';
 
 ex	:	value | New name | '(' ex ')' | '(' type ')' ex
 			| call | '!' ex | ex '*' ex | ex '/' ex
@@ -33,7 +32,7 @@ ex	:	value | New name | '(' ex ')' | '(' type ')' ex
 			| ex '<' ex | ex '>' ex | ex '<=' ex | ex '>=' ex
 			| ex '==' ex | ex '!=' ex | ex '&&' ex | ex '||' ex;
 
-value	:	literal | variable;
+value	:	literal | path;
 literal	:	IntegerLiteral | StringLiteral;
 
 /* Lexer rules. */

@@ -8,26 +8,26 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Program {
+    
     public List<Function> functions;
     public List<Class> classes;
 
     public Program(GrammarParser parser) {
-        // Collect function & classes
         functions = new ArrayList<>();
     	classes = new ArrayList<>();
 
         RuleContext program = parser.program();
         for(int i = 0; i < program.getChildCount(); i++) {
-        	RuleContext definition = (RuleContext) program.getChild(i);
-        	if(definition.getRuleIndex() == GrammarParser.RULE_classDefinition) {
-        		classes.add(Class.recognize((GrammarParser.ClassDefinitionContext) definition));
+        	RuleContext def = (RuleContext) program.getChild(i);
+        	if(def.getRuleIndex() == GrammarParser.RULE_classDefinition) {
+        		classes.add(new Class((GrammarParser.ClassDefinitionContext) def));
         	} else {
-        		functions.add(Function.recognize((GrammarParser.FunctionDefinitionContext) definition));
+        		functions.add(new Function((GrammarParser.FunctionDefinitionContext) def));
         	}
         }
 	}
 
-    @Override
+    /*@Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Functions:");
@@ -41,6 +41,6 @@ public class Program {
         }
 
         return sb.toString();
-    }
+    }*/
 }
 

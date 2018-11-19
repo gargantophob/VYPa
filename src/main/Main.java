@@ -66,12 +66,14 @@ public class Main {
         parser.removeErrorListener(ConsoleErrorListener.INSTANCE);
         checkSyntacticErrors(parser);
 
-        // Translate
+        // Walk through parsed structures
         parsed.Program parsed = new parsed.Program(parser);
-        Program p = new Program(parsed);
-        String output = "TODO";
 
+        // Semantic check
+        Program p = new Program(parsed);
+        
         // Store output
+        String output = "TODO";
         try (PrintStream out = new PrintStream(new FileOutputStream(args[1]))) {
 		    out.print(output);
 		} catch(java.io.FileNotFoundException e) {

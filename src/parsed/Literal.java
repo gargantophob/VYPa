@@ -5,21 +5,18 @@ import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 
 public class Literal {
+    
     public boolean isInteger;
-    public String value;
+    public String text;
 
-    public Literal(boolean isInteger, String value) {
-        this.isInteger = isInteger;
-        this.value = value;
-    }
-
-    public static Literal recognize(GrammarParser.LiteralContext ctx) {
+    public Literal(GrammarParser.LiteralContext ctx) {
         Token token = (Token) ctx.getChild(0).getPayload();
-        return new Literal(token.getType() == GrammarParser.IntegerLiteral, token.getText());
+        isInteger = token.getType() == GrammarParser.IntegerLiteral;
+        text = token.getText();
     }
 
-    @Override
+    /*@Override
     public String toString() {
         return value;
-    }
+    }*/
 }

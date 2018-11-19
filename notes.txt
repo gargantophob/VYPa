@@ -14,7 +14,7 @@ Return codes:
 
 It is not allowed to define a [instance] variable of the same name as some defined method in the same class.
 
-It is not possible to define a variable of the same name as some defined function/class or variable defined in the same block.
+It is not possible to define a [local] variable of the same name as some defined function/class or variable defined in the same block.
 
 Multiple definitions of variable with the same name in the same scope are forbidden.
 

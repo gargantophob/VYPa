@@ -3,78 +3,110 @@ package main;
 import java.util.List;
 import java.util.ArrayList;
 
+import java.util.Set;
+
 public class Class {
     
     public parsed.Class prototype;
 
     public String name;
+    public Class base;
     
-    public Scope scope;
-
-    public Class(String name, Class base, List<Variable> attributes, List<Function> methods) {
+    public SymbolTable<Variable> attributes;
+    public SymbolTable<Function> methods;
+    
+    public Class() {
         
+        // Object
         prototype = null;
-        this.name = name;
-        Scope parentScope = base == null ? null : base.scope;
-        scope = new Scope(parentScope);
-        scope.variableAllow();
-        scope.functionAllow();
-        
-        attributes.forEach(v -> scope.variableRegister(v));
-        methods.forEach(f -> scope.functionRegister(f));
+        name = "Object";
+        base = null;
+        attributes = new SymbolTable<>();
+        methods = new SymbolTable<>();
+
+        // TODO string toString(void)
+        // TODO string getClass(void)
     }
 
     public Class(parsed.Class prototype) {
         this.prototype = prototype;
         name = prototype.name;
-        scope = null;
     }
 
-    public void lookUpBase() {
+    public void collectBase() {
         if(prototype == null) {
+            // Object
             return;
         }
-        if(name.equals(prototype.baseName)) {
+        
+        base = SymbolTable.classes.lookUp(prototype.baseName);
+        if(this == base) {
             Recover.exit(3, "class " + name + " has itself as its base");
         }
-        scope = new Scope(ClassTable.lookUp(prototype.baseName).scope);
-        scope.variableAllow();
-        scope.functionAllow();
+    }
 
-        scope.variableRegister(new Variable(new Type(Type.Option.OBJECT, this), "this"));
+    public void collectMembers() {
         if(prototype == null) {
+            // Object
             return;
         }
-        prototype.attributes.forEach(v -> scope.variableRegister(new Variable(v)));
-        prototype.methods.forEach(f -> scope.functionRegister(new Function(f, scope)));
-    }
 
-    public void processBody() {
-        scope.functionProcessBody();
-    }
+        attributes = new SymbolTable<>();
+        prototype.attributes.forEach(parsed -> {
+            Variable v = new Variable(parsed);
+            attributes.register(v.name, v);
+        });
 
-    public static Class defaultClassObject() {
-        String name = "Object";
-        List<Function> methods = new ArrayList<>();
+        methods = new SymbolTable<>();
+        prototype.methods.forEach(parsed -> {
+            Function f = new Function(parsed);
+            methods.register(f.name, f);
+        });
 
-        // TODO string toString(void)
+        // Two fields cannot have the same name
+        Set<String> set1 = attributes.symbols.keySet();
+        Set<String> set2 = methods.symbols.keySet();
+        if(!java.util.Collections.disjoint(set1, set2)) {
+            Recover.exit(3, "redefinition of symbol");
+        }
+
+        // Attribute cannot have the same as some parent field
+        if(base != null) {
+            attributes.symbols.keySet().forEach(name -> {
+                if(base.isDefinedField(name)) {
+                    Recover.exit(3, "redefinition of symbol");
+                }
+            });
+        }
         
-        // TODO string getClass(void)
-
-        return new Class(name, null, new ArrayList<>(), methods);
+        // TODO can redefine method with the same signature (override)
     }
 
-    /*@Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(name + " : " + baseClass + ". ");
+    public void collectBody() {
+        methods.symbols.values().forEach(f -> f.collectBody());
+    }
 
-        sb.append("Attributes: ");
-        attributes.forEach(p -> sb.append(p + ", "));
+    public boolean isDefinedAttribute(String name) {
+        if(attributes.isDefined(name)) {
+            return true;
+        } else if(base != null) {
+            return base.isDefinedAttribute(name);
+        } else {
+            return false;
+        }
+    }
 
-        sb.append("Methods: ");
-        methods.forEach(m -> sb.append(m + ", "));
+    public boolean isDefinedMethod(String name) {
+        if(methods.isDefined(name)) {
+            return true;
+        } else if(base != null) {
+            return base.isDefinedMethod(name);
+        } else {
+            return false;
+        }
+    }
 
-        return sb.toString();
-    }*/
+    public boolean isDefinedField(String name) {
+        return isDefinedAttribute(name) || isDefinedMethod(name);
+    }
 }

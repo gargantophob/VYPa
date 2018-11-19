@@ -25,13 +25,4 @@ public class Literal {
         isInteger = false;
         stringValue = value;
     }
-
-    /*@Override
-    public String toString() {
-        if(isInteger) {
-            return "" + intValue;
-        } else {
-            return "\"" + stringValue + "\"";
-        }
-    }*/
 }

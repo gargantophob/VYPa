@@ -34,21 +34,4 @@ public class Expression {
         this.castType = castType;
         this.call = call;
     }
-
-    /*@Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("(");
-        switch(option) {
-            case INTEGER: case STRING: sb.append(literal); break;
-            case PATH: sb.append(path); break;
-            case NEW: sb.append("new " + className); break;
-            case CAST: sb.append("(" + className + ") " + op1); break;
-            case CALL: sb.append(call); break;
-            case NEG: sb.append(option + " " + op1); break;
-            default: sb.append(op1 + " " + option + " " + op2); break;
-        }
-        sb.append(")");
-        return sb.toString();
-    }*/
 }

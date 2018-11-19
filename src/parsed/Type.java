@@ -5,19 +5,16 @@ import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 
 public class Type {
-    public String type;
     
-    public Type(String type) {
-        this.type = type;
+    public String text;
+    
+    public Type(GrammarParser.TypeContext ctx) {
+        text = ctx.getText();
     }
 
-    public static Type recognize(GrammarParser.TypeContext ctx) {
-        return new Type(ctx.getText());
-    }
-    
-    @Override
+    /*@Override
     public String toString() {
         return type;
-    }
+    }*/
 }
 
