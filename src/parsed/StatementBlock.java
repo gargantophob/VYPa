@@ -15,9 +15,7 @@ public class StatementBlock {
     }
 
     public static StatementBlock recognize(GrammarParser.BlockStatementContext ctx) {
-        List<Statement> statements = new ArrayList<>();
-        ctx.statement().forEach(s -> statements.addAll(Statement.recognize(s)));
-        return new StatementBlock(statements);
+        return new StatementBlock(Statement.recognize(ctx));
     }
 
     @Override

@@ -58,6 +58,12 @@ public class Statement {
         this.expression = expression;
     }
 
+    public static List<Statement> recognize(GrammarParser.BlockStatementContext ctx) {
+        List<Statement> statements = new ArrayList<>();
+        ctx.statement().forEach(s -> statements.addAll(Statement.recognize(s)));
+        return statements;
+    }
+
     public static List<Statement> recognize(GrammarParser.StatementContext ctx) {
         List<Statement> list = new ArrayList<>();
         switch(((RuleContext) ctx.getChild(0)).getRuleIndex()) {

@@ -3,7 +3,7 @@ package main;
 public class Recover {
 
 	public static void warn(String msg) {
-		System.err.println("Something went wrong:" + msg);
+		System.err.println("Something went wrong: " + msg);
 	}
 
     public static void notImplemented() {

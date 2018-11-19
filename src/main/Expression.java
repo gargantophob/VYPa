@@ -51,39 +51,4 @@ public class Expression {
         sb.append(")");
         return sb.toString();
     }*/
-
-    /*public void assertDefineteness(Scope scope) {
-        switch(type) {
-            case INTEGER: case STRING: break;
-            case PATH: path.assertDefineteness(scope); break;
-            case NEW:
-                scope.assertExistenceOfClass(className);
-                break;
-            case CAST:
-                switch(castType.type) {
-                    case VOID: Recover.exit(3, "cast to void"); break;
-                    case OBJECT: scope.assertExistenceOfClass(castType.className); break;
-                    default: break;
-                }
-                break;
-            case CALL:
-                call.assertDefineteness(scope); break;
-            case NEG: op1.assertDefineteness(scope); break;
-            default: op1.assertDefineteness(scope); op2.assertDefineteness(scope); break;
-        }
-    }*/
-
-    // public Type inferType() {
-    //     switch(type) {
-    //         case INTEGER: return Type.TypeType.INT;
-    //         case STRING: return Type.TypeType.STRING;
-    //         case PATH: /* type of variable */ return null;
-    //         case NEW: /* type of class */ return null;
-    //         case CAST: return castType;
-    //         case CALL: /** function type */ return null;
-    //         case NEG: return null;
-    //         default: return null;
-    //     }
-    // }
-
 }

@@ -4,25 +4,21 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Class {
+    
     public parsed.Class prototype;
 
     public String name;
-    public Class base;
-
-    /*public List<Variable> attributes;
-    public List<Function> methods;*/
-
+    
     public Scope scope;
 
     public Class(String name, Class base, List<Variable> attributes, List<Function> methods) {
+        
         prototype = null;
-
         this.name = name;
-        this.base = base;
-
-        scope = new Scope(base.scope);
-        scope.variableInitialize();
-        scope.functionInitialize();
+        Scope parentScope = base == null ? null : base.scope;
+        scope = new Scope(parentScope);
+        scope.variableAllow();
+        scope.functionAllow();
         
         attributes.forEach(v -> scope.variableRegister(v));
         methods.forEach(f -> scope.functionRegister(f));
@@ -31,9 +27,7 @@ public class Class {
     public Class(parsed.Class prototype) {
         this.prototype = prototype;
         name = prototype.name;
-        base = null;
-        attributes = null;
-        methods = null;
+        scope = null;
     }
 
     public void lookUpBase() {
@@ -43,7 +37,9 @@ public class Class {
         if(name.equals(prototype.baseName)) {
             Recover.exit(3, "class " + name + " has itself as its base");
         }
-        base = ClassTable.lookUp(prototype.baseName);
+        scope = new Scope(ClassTable.lookUp(prototype.baseName).scope);
+        scope.variableAllow();
+        scope.functionAllow();
     }
 
     public void collectDefinitions() {
@@ -51,12 +47,20 @@ public class Class {
             return;
         }
 
-        attributes = new VariableTable(null);
-        prototype.attributes.forEach(a -> attributes.register(new Variable(a)));
+        scope.variableRegister(new Variable(new Type(Type.Option.OBJECT, this), "this"));
+        prototype.attributes.forEach(v -> scope.variableRegister(new Variable(v)));
+        prototype.methods.forEach(f -> scope.functionRegister(new Function(f, scope)));
+    }
 
-        // TODO collect methods
-        methods = new FunctionTable();
-        prototype.methods.forEach(m -> methods.register(new Function(m, this)));
+    public static Class defaultClassObject() {
+        String name = "Object";
+        List<Function> methods = new ArrayList<>();
+
+        // TODO string toString(void)
+        
+        // TODO string getClass(void)
+
+        return new Class(name, null, new ArrayList<>(), methods);
     }
 
     /*@Override

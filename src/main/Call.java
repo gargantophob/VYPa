@@ -4,16 +4,16 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Call  {
-    public Function caller;
-    public Function callee;
+    
+    public Scope scope;
+
+    public boolean isSuper;
+    public Path callee;
 
     public List<Expression> arguments;
-    
-    public boolean isSuper;
-    
-    // public Path callee;
-    // public String name;
 
+    public Function function;
+    
     /*public Call(
         boolean isSuper, Path callee, String name, List<Expression> arguments
     ) {
@@ -30,17 +30,5 @@ public class Call  {
         arguments.forEach(arg -> sb.append(arg + ","));
         sb.append(")");
         return sb.toString();
-    }*/
-
-    /*public void assertDefineteness(Scope scope) {
-        if(isSuper) {
-            Recover.notImplemented();
-        }
-        if(callee != null) {
-            Recover.notImplemented();
-        }
-
-        scope.assertExistenceOfFunction(name);
-        arguments.forEach(arg -> arg.assertDefineteness(scope));
     }*/
 }

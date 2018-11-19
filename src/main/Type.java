@@ -11,6 +11,11 @@ public class Type {
     public Option option;
     public Class classRef;
 
+    public Type(Option option, Class classRef) {
+        this.option = option;
+        this.classRef = classRef;
+    }
+
     public Type(parsed.Type ref) {
         String str = ref.type;
     	if(str.equals("void")) {

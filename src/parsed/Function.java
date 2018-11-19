@@ -11,10 +11,10 @@ public class Function {
     public Type type;
     public String name;
     public List<Variable> parameters;
-    public StatementBlock body;
+    public List<Statement> body;
 
     public Function(
-        Type type, String name, List<Variable> parameters, StatementBlock body
+        Type type, String name, List<Variable> parameters, List<Statement> body
     ) {
         this.type = type;
         this.name = name;
@@ -29,7 +29,7 @@ public class Function {
         ctx.paramList().formalParameter().forEach(par -> 
             parameters.add(new Variable(Type.recognize(par.type()), par.name().getText()))
         );
-        StatementBlock body = StatementBlock.recognize(ctx.blockStatement());
+        List<Statement> body = Statement.recognize(ctx.blockStatement());
         return new Function(type, name, parameters, body);
     }
 

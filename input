@@ -1,39 +1,13 @@
-class Lol : Object {
-	int a,b;
-	c2 a;
-	void foo(int a) {
-		return;
-	}
+class A : Object {
+	int index;
 }
 
-class c2: Lol {
-	
+class B : A {
+	A a;
 }
 
-void foo(int foo, string b, Lol c) {
-	int x;
-	int Lol;
-	x = 23 + "loool";
-	x = !(2 + 2 * 2);
-	foo(x, 23+23);
-}
-
-c2 bar(void) {
-	int a;
-	foo((int)2+2, 2-2, !a);
-	return a;
-}
-
-string ali(int c, string b, int d) {
-	if(2) {
-		int c;
-	} else {
-		int a;
-	}
-	int a;
-	a = 2;
-	a = a + b * d - "asdf";
-
-	bar(2+2, 2-2, !a);
-	return a;
+void main(void) {
+	A a;
+	B b;
+	b.a.index = 23;
 }

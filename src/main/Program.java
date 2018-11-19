@@ -13,19 +13,12 @@ public class Program {
         ClassTable.initialize();
         parsed.classes.forEach(c -> ClassTable.register(new Class(c)));
         ClassTable.lookUpBase();
+        ClassTable.collectDefinitions();
 
         // Collect global functions
-        /*FunctionTable.initialize();
-        parsed.functions.forEach(f -> FunctionTable.global.register(new Function(f, null)));*/
-
-        // Collect members of classes
-        // ClassTable.collectDefinitions();
-
-        // Function functionReference;
-        /*functionReference = toStringCreate();
-        functions.put(functionReference.name, functionReference);
-        functionReference = getClassCreate();
-        functions.put(functionReference.name, functionReference);*/
+        Scope scope = new Scope(null);
+        scope.functionAllow();
+        parsed.functions.forEach(f -> scope.functionRegister(new Function(f, scope)));
 
         // Implicit functions
 

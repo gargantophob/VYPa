@@ -14,18 +14,25 @@ public class Scope {
 	
 	public Map<String, Function> functions;
 
+	public Map<String, Literal> literals;
+
 	public Scope(Scope parentScope) {
 		this.parentScope = parentScope;
 		variables = null;
 		functions = null;
+		
 	}
 	
-	public void variableInitialize() {
+	public void variableAllow() {
 		variables = new HashMap<>();
 	}
 
-	public void functionInitialize() {
+	public void functionAllow() {
 		functions = new HashMap<>();
+	}
+
+	public void literalAllow() {
+		literals = new HashMap<>();
 	}
 
 	public boolean variableIsDefinedHere(String name) {
@@ -59,7 +66,7 @@ public class Scope {
 
 	public Variable variableLookUp(String name) {
 		variableAssertExistence(name);
-		Variable v;
+		Variable v = null;
 		if(variables != null) {
 			v = variables.get(name);
 		}
@@ -71,12 +78,13 @@ public class Scope {
 	
 	public void variableRegister(Variable v) {
 		if(variables == null) {
-			Recover.warn("Something went wrong...");
+			Recover.warn("registering variable to nowhere");
 			return;
 		}
 		String name = v.name;
-		// ClassTable.assertNonExistence(name);
+		ClassTable.assertNonExistence(name);
 		variableAssertNonExistenceHere(name);
+		functionAssertNonExistenceHere(name);
 		variables.put(name, v);
 	}
 
@@ -112,7 +120,7 @@ public class Scope {
 	
 	public Function functionLookUp(String name) {
 		functionAssertExistence(name);
-		Function f;
+		Function f = null;
 		if(functions != null) {
 			f = functions.get(name);
 		}
@@ -124,10 +132,11 @@ public class Scope {
 
 	public void functionRegister(Function f) {
 		if(functions == null) {
-			Recover.warn("Something went wrong...");
+			Recover.warn("registering variable to nowhere");
 			return;
 		}
 		String name = f.name;
+		variableAssertNonExistenceHere(name);
 		functionAssertNonExistenceHere(name);
 		functions.put(name, f);
 	}

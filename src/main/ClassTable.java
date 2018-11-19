@@ -15,7 +15,7 @@ public class ClassTable {
 
 	public static void initialize() {
 		classes = new HashMap<>();		
-		register(defaultClassObject());
+		register(Class.defaultClassObject());
 	}
 
 	public static boolean isDefined(String name) {
@@ -48,18 +48,8 @@ public class ClassTable {
 		classes.values().forEach(c -> c.lookUpBase());
 	}
 
-	/*public static void collectDefinitions() {
+	public static void collectDefinitions() {
 		classes.values().forEach(c -> c.collectDefinitions());
-	}*/
-
-	public static Class defaultClassObject() {
-		String name = "Object";
-		List<Function> methods = new ArrayList<>();
-
-		// TODO string toString(void)
-		// TODO string getClass(void)
-
-		return new Class(name, null, new ArrayList<>(), methods);
 	}
 
 	// string toString(void);
