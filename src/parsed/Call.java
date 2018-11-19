@@ -10,24 +10,44 @@ import java.util.ArrayList;
 public class Call  {
     
     public boolean isSuper;
-    public Path path;
+    public Expression context;
+
     public String name;
+    
     public List<Expression> arguments;
 
+    public Call(String name, GrammarParser.ArgumentsContext ctx) {
+        this.name = name;
+        arguments = new ArrayList<>();
+        ctx.ex().forEach(e -> arguments.add(new Expression(e)));
+    }
+
     public Call(GrammarParser.CallContext ctx) {
-        isSuper = false;
-        path = null;
+        this(ctx.name().getText(), ctx.arguments());
         
         if(ctx.getChild(1).getText().equals(".")) {
-            if(ctx.path() == null) {
-                isSuper = true;
+            if(ctx.ex() != null) {
+                isSuper = false;
+                context = new Expression(ctx.ex());
             } else {
-                path = new Path(ctx.path());
+                isSuper = true;
+                context = null;
             }
         }
-        String name = ctx.name().getText();
-        List<Expression> arguments = new ArrayList<>();
-        ctx.ex().forEach(ex -> arguments.add(new Expression(ex)));
+    }
+
+    public Call(GrammarParser.ExContext ctx) {
+        this(ctx.name().getText(), ctx.arguments());
+
+        if(ctx.getChild(1).getText().equals(".")) {
+            if(ctx.ex().size() > 0) {
+                isSuper = false;
+                context = new Expression(ctx.ex().get(0));
+            } else {
+                isSuper = true;
+                context = null;
+            }
+        }
     }
 
     /*@Override

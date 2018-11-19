@@ -13,6 +13,8 @@ public class Program {
         SymbolTable.collectClassMembers();
         SymbolTable.collectFunctionHeaders(parsed.functions);
         SymbolTable.collectBodies();
+
+        // symbols collected (except literals)
 	}
 }
 

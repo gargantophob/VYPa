@@ -4,12 +4,14 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Literal {
+    
     public boolean isInteger;
     public int intValue;
     public String stringValue;
 
-    public Literal(boolean isInteger, String text) {
-        this.isInteger = isInteger;
+    public Literal(parsed.Literal parsed) {
+        isInteger = parsed.isInteger;
+        String text = parsed.text;
         if(isInteger) {
             try {
                 intValue = Integer.parseInt(text);
@@ -21,8 +23,13 @@ public class Literal {
         }
     }
 
-    public Literal(String value) {
+    public Literal(int intValue) {
+        isInteger = true;
+        this.intValue = intValue;
+    }
+
+    public Literal(String stringValue) {
         isInteger = false;
-        stringValue = value;
+        this.stringValue = stringValue;
     }
 }

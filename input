@@ -1,27 +1,49 @@
 class A : Object {
-	int a;
+	Object a;
 	int b;
 
 	void c(void) {}
+
+	void A(void) {}
+
+	string toString(void) {}
 }
 
 class B : A {
 	A e;
 
-	void c(int a) {
-		this.a = 23;
+	void c(void) {
+		this.e = (23);
+		this.c();
 		main();
+		int a;
+		a = (B) a;
+		a = 2 + (new Object).main((new Object));
+		a = 3;
+		/*
+		if(12) {
+			int a;
+			a = 1;
+			while(a) {
+				main2();
+				main();
+				string a;
+			}
+		} else {
+
+		}
+		*/
 	}
 }
 
 void main(void) {
 	A a;
 	B b;
-	b.a.index = 23;
-	b.a.bar();
+	b.a = 23;
+	b.a.toString();
 }
 
 void main2(int a, int b) {
-	int a;
-	int a;
+	//int a;
+	//int a;
 }

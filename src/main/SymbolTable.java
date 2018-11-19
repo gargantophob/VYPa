@@ -8,16 +8,18 @@ import java.util.HashMap;
 
 public class SymbolTable<T> {
 
+	// public static SymbolTable<Literal> literals;
 	public static SymbolTable<Class> classes;
 	public static SymbolTable<Function> functions;
 
 	public static void initialize() {
+		// literals = new SymbolTable<>();
 		classes = new SymbolTable<>();
 		functions = new SymbolTable<>();
 	}
 
 	public static void collectClassNames(List<parsed.Class> classesList) {
-		Class classObject = new Class();
+		Class classObject = new Class("Object");
 		classes.register(classObject.name, classObject);
 		classesList.forEach(parsed -> {
 			Class c = new Class(parsed);
@@ -35,11 +37,14 @@ public class SymbolTable<T> {
 	
 	public static void collectFunctionHeaders(List<parsed.Function> functionsList) {
 		functionsList.forEach(parsed -> {
-			Function f = new Function(parsed);
+			Function f = new Function(parsed, null);
 			functions.register(f.name, f);
 		});
 
-		// TODO existence of void main(void);
+		Function main = functions.lookUp("main");
+		if(!main.signatureMatch(Type.VOID, new ArrayList<>())) {
+			Recover.exit(3, "bad signature of function " + main.name);
+		}
 	}
 
 	public static void collectBodies() {
@@ -79,41 +84,41 @@ public class SymbolTable<T> {
 		symbols.put(name, t);
 	}
 
-	/*public static void lookUpBase() {
-		classes.values().forEach(c -> c.lookUpBase());
+	public void remove(String name) {
+		symbols.remove(name);
 	}
 
-	public static void processBody() {
-		classes.values().forEach(c -> c.processBody());
-	}*/
+	/**************************************************/
 
-	// string toString(void);
-    /*public static Function toStringCreate() {
-        Type type = new Type(Type.TypeType.STRING, null);
-        String name = "toString";
-        List<Variable> parameters = new ArrayList<>();
-        List<Statement> statements = new ArrayList<>();
-        statements.add(new Statement(new Expression(
-            Expression.ExpressionType.STRING, null, null, null, 
-            new Literal("TODO"), null, null, null
-        )));
-        StatementBlock body = new StatementBlock(statements);
+	public SymbolTable<T> parentScope;
+	
+	public SymbolTable(SymbolTable<T> parentScope) {
+		this();
+		this.parentScope = parentScope;
+	}
 
-        return new Function(type, name, parameters, body);
-    }*/
+	public boolean isDefinedRecursively(String name) {
+		if(isDefined(name)) {
+			return true;
+		} else if(parentScope != null) {
+			return parentScope.isDefinedRecursively(name);
+		} else {
+			return false;
+		}
+	}
 
-    // string getClass(void);
-    /*public static Function getClassCreate() {
-        Type type = new Type(Type.TypeType.STRING, null);
-        String name = "getClass";
-        List<Variable> parameters = new ArrayList<>();
-        List<Statement> statements = new ArrayList<>();
-        statements.add(new Statement(new Expression(
-            Expression.ExpressionType.STRING, null, null, null, 
-            new Literal("Object"), null, null, null
-        )));
-        StatementBlock body = new StatementBlock(statements);
+	public void assertExistenceRecursively(String name) {
+		if(!isDefinedRecursively(name)) {
+            Recover.exit(3, "missing definition of symbol " + name);
+        }
+	}
 
-        return new Function(type, name, parameters, body);
-    }*/
+	public T lookUpRecursively(String name) {
+		assertExistenceRecursively(name);
+		if(isDefined(name)) {
+			return lookUp(name);
+		} else {
+			return parentScope.lookUpRecursively(name);
+		}
+	}
 }

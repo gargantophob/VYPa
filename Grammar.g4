@@ -22,12 +22,14 @@ assignment	:	path '=' ex ';' ;
 block	:	'{' statement* '}';
 conditional	:	If '(' ex ')' block Else block;
 iteration	:	While '(' ex ')' block;
+arguments	:	'(' (ex (',' ex)*)? ')';
+call	:	((Super | ex ) '.')? name arguments ';';
 returnStatement	:	Return ex? ';';
 
-call	:	((Super | path ) '.')? name '(' (ex (',' ex)*)? ')' ';';
-
 ex	:	value | New name | '(' ex ')' | '(' type ')' ex
-			| call | '!' ex | ex '*' ex | ex '/' ex
+			| name arguments | Super '.' name arguments | ex '.' name arguments
+			| '!' ex
+			| ex '*' ex | ex '/' ex
 			| ex '+' ex | ex '-' ex
 			| ex '<' ex | ex '>' ex | ex '<=' ex | ex '>=' ex
 			| ex '==' ex | ex '!=' ex | ex '&&' ex | ex '||' ex;

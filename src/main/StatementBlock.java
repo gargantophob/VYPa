@@ -12,8 +12,8 @@ public class StatementBlock {
     public List<Statement> statements;
 
     public StatementBlock(List<parsed.Statement> parsed, SymbolTable<Variable> parentScope) {
-        /*scope = new SymbolTable<>();
+        scope = new SymbolTable<>(parentScope);
         statements = new ArrayList<>();
-        parsed.forEach(s -> statements.add(new Statement(s, scope)));*/
+        parsed.forEach(s -> statements.add(new Statement(s, scope)));
     }
 }

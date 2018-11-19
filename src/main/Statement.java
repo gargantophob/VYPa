@@ -21,26 +21,28 @@ public class Statement {
     public Call call;
 
     public Statement(parsed.Statement parsed, SymbolTable<Variable> scope) {
-        /*switch(parsed.option) {
+        switch(parsed.option) {
             case DECLARATION:
                 option = Option.DECLARATION;
                 variable = new Variable(parsed.variable);
-                scope.variableRegister(variable);
+                SymbolTable.classes.assertNonExistence(variable.name);
+                SymbolTable.functions.assertNonExistence(variable.name);
+                scope.register(variable.name, variable);
                 break;
             case ASSIGNMENT:
                 option = Option.ASSIGNMENT;
                 path = new Path(parsed.path, scope);
-                expression = null; // TODO;
+                expression = new Expression(parsed.expression, scope);
                 break;
             case CONDITIONAL:
                 option = Option.CONDITIONAL;
-                expression = null; // TODO
+                expression = new Expression(parsed.expression, scope);
                 body = new StatementBlock(parsed.body, scope);
                 bodyElse = new StatementBlock(parsed.bodyElse, scope);
                 break;
             case ITERATION:
                 option = Option.ITERATION;
-                expression = null; // TODO
+                expression = new Expression(parsed.expression, scope);
                 body = new StatementBlock(parsed.body, scope);
                 break;
             case CALL:
@@ -49,8 +51,10 @@ public class Statement {
                 break;
             case RETURN:
                 option = Option.RETURN;
-                expression = null; // TODO
+                if(parsed.expression != null) {
+                    expression = new Expression(parsed.expression, scope);
+                }
                 break;
-        }*/
+        }
     }
 }
