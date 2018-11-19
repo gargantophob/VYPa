@@ -45,7 +45,7 @@ public class Statement {
                 break;
             case CALL:
                 option = Option.CALL;
-                call = null; // TODO
+                call = new Call(parsed.call, scope);
                 break;
             case RETURN:
                 option = Option.RETURN;

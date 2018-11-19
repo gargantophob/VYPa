@@ -4,15 +4,19 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Function {
+    public parsed.Function prototype;
+    
     public Type type;
     public String name;
-    
+    public Scope scope;
     public List<Variable> parameters;
+
     public List<Statement> body;
 
-    public Scope scope;
 
     public Function(parsed.Function parsed, Scope parentScope) {
+        prototype = parsed;
+        
         type = new Type(parsed.type);
         name = parsed.name;
         scope = new Scope(parentScope);
@@ -25,9 +29,11 @@ public class Function {
             scope.variableRegister(v);
             parameters.add(v);
         });
-        
+    }
+
+    public void processBody() {
         body = new ArrayList<>();
-        parsed.body.forEach(s -> body.add(new Statement(s, scope)));
+        prototype.body.forEach(s -> body.add(new Statement(s, scope)));
     }
 
     /*public Function(

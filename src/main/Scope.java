@@ -140,4 +140,8 @@ public class Scope {
 		functionAssertNonExistenceHere(name);
 		functions.put(name, f);
 	}
+
+	public void functionProcessBody() {
+		functions.values().forEach(f -> f.processBody());
+	}
 }

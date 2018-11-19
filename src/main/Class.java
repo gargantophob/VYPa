@@ -40,16 +40,17 @@ public class Class {
         scope = new Scope(ClassTable.lookUp(prototype.baseName).scope);
         scope.variableAllow();
         scope.functionAllow();
-    }
 
-    public void collectDefinitions() {
+        scope.variableRegister(new Variable(new Type(Type.Option.OBJECT, this), "this"));
         if(prototype == null) {
             return;
         }
-
-        scope.variableRegister(new Variable(new Type(Type.Option.OBJECT, this), "this"));
         prototype.attributes.forEach(v -> scope.variableRegister(new Variable(v)));
         prototype.methods.forEach(f -> scope.functionRegister(new Function(f, scope)));
+    }
+
+    public void processBody() {
+        scope.functionProcessBody();
     }
 
     public static Class defaultClassObject() {

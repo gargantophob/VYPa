@@ -48,8 +48,8 @@ public class ClassTable {
 		classes.values().forEach(c -> c.lookUpBase());
 	}
 
-	public static void collectDefinitions() {
-		classes.values().forEach(c -> c.collectDefinitions());
+	public static void processBody() {
+		classes.values().forEach(c -> c.processBody());
 	}
 
 	// string toString(void);

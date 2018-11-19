@@ -1,13 +1,21 @@
 class A : Object {
 	int index;
+
+	void foo(void) {}
 }
 
 class B : A {
 	A a;
+
+	A foo(B a) {
+		this.a = 23;
+		main();
+	}
 }
 
 void main(void) {
 	A a;
 	B b;
 	b.a.index = 23;
+	b.a.bar();
 }

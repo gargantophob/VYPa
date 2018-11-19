@@ -7,21 +7,30 @@ public class Call  {
     
     public Scope scope;
 
-    public boolean isSuper;
-    public Path callee;
-
-    public List<Expression> arguments;
-
     public Function function;
+    public Path context;
+    public List<Expression> arguments;
     
-    /*public Call(
-        boolean isSuper, Path callee, String name, List<Expression> arguments
-    ) {
-        this.isSuper = isSuper;
-        this.callee = callee;
-        this.name = name;
-        this.arguments = arguments;    
-    }*/
+    public Call(parsed.Call parsed, Scope scope) {
+        this.scope = scope;
+
+        if(parsed.isSuper) {
+            Recover.notImplemented();
+        } else if(parsed.context != null) {
+            context = new Path(parsed.context.path, scope);
+            Variable callee = context.lastVariable();
+            Class contextClass = callee.type.classRef;
+            if(contextClass == null) {
+                Recover.exit(3, callee.name + " is not an instance variable");
+            }
+            function = contextClass.scope.functionLookUp(parsed.name);
+        } else {
+            function = scope.functionLookUp(parsed.name);
+        }
+
+        arguments = new ArrayList<>();
+        // TODO;
+    }
 
     /*@Override
     public String toString() {

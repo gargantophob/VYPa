@@ -17,9 +17,17 @@ public class Path {
             if(handleClass == null) {
                 Recover.exit(3, handle.name + " is not an instance variable");
             }
-            handle = handleClass.scope.variableLookUp(path.get(i));
+            String name = path.get(i);
+            if(name.equals("this")) {
+                Recover.exit(3, "cannot cascade this");
+            }
+            handle = handleClass.scope.variableLookUp(name);
             this.path.add(handle);
         }
+    }
+
+    public Variable lastVariable() {
+        return path.size() == 0 ? root : path.get(path.size()-1);
     }
 
     /*@Override
