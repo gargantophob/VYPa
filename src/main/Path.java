@@ -1,36 +1,50 @@
 package main;
 
+import parser.GrammarParser;
+
 import java.util.List;
 import java.util.ArrayList;
 
 public class Path {
     
-    public Variable root;
+    public Function context;
+    public SymbolTable<Variable> scope;
+
+    public Variable handle;
     public List<Variable> path;
     public Type type;
-    
-    public Path(parsed.Path parsed, SymbolTable<Variable> scope) {
-        List<String> names = parsed.names;
-        root = scope.lookUpRecursively(names.get(0));
+
+    public Path(
+        Function context, SymbolTable<Variable> scope, GrammarParser.PathContext ctx
+    ) {
+        this.context = context;
+        this.scope = scope;
+
+        // Collect names from the syntax tree
+        List<String> names = new ArrayList<>();
+        ctx.atomicPath().forEach(ap -> names.add(ap.getText()));
+
+        // Get handle
+        handle = scope.lookUpRecursively(names.get(0));
+        if(names.size() == 1) {
+            type = handle.type;
+            return;
+        }
+
+        // Process appendix
         path = new ArrayList<>();
-
-        Variable handle = root;
+        Variable current = handle;
         for(int i = 1; i < names.size(); i++) {
-            if(!(handle.type instanceof Class)) {
-                Recover.exit(3, handle.name + " is not an instance variable");
+            if(!(current.type instanceof Class)) {
+                Recover.type(context.name + ": " + current.name + " is not an instance variable");
             }
-            Class handleClass = (Class) handle.type;
+            Class currentClass = (Class) current.type;
             String name = names.get(i);
-            handle = handleClass.lookUpAttribute(name);
-            this.path.add(handle);
+            current = currentClass.lookUpAttribute(name);
+            this.path.add(current);
         }
-    }
 
-    public void inferType() {
-        if(path.size() == 0) {
-            type = root.type;
-        } else {
-            type = path.get(path.size()-1).type;
-        }
+        // Type is the type of the last address
+        type = path.get(path.size()-1).type;
     }
 }

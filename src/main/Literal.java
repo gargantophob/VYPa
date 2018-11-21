@@ -1,5 +1,8 @@
 package main;
 
+import parser.GrammarParser;
+import org.antlr.v4.runtime.Token;
+
 import java.util.List;
 import java.util.ArrayList;
 
@@ -9,23 +12,24 @@ public class Literal {
     public String text;
     public int intValue;
 
-    public Literal(parsed.Literal parsed) {
-        text = parsed.text;
+    public Literal(GrammarParser.LiteralContext ctx) {
+        Token token = (Token) ctx.getChild(0).getPayload();
+        text = token.getText();
         
-        if(parsed.isInteger) {
+        if(token.getType() == GrammarParser.IntegerLiteral) {
             type = Type.INT;
             try {
                 intValue = Integer.parseInt(text);
             } catch(NumberFormatException e) {
-                Recover.exit(99, "Something went wrong...");
+                Recover.internal("string to integer conversion failed");
             }
         } else {
             type = Type.STRING;
-            text = text.substring(1, text.length()-1);
+            text = text.substring(1, text.length()-1); // removes quotes
         }
     }
 
-    public Literal(int intValue) {
+    /*public Literal(int intValue) {
         type = Type.INT;
         text = "" + intValue; // FIXME
         this.intValue = intValue;
@@ -34,5 +38,5 @@ public class Literal {
     public Literal(String text) {
         type = Type.STRING;
         this.text = text;
-    }
+    }*/
 }

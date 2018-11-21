@@ -1,5 +1,10 @@
 package main;
 
+import parser.GrammarParser;
+
+import java.util.List;
+import java.util.ArrayList;
+
 public class Variable {
     
     public Type type;
@@ -9,12 +14,25 @@ public class Variable {
         this.type = type;
         this.name = name;
     }
+
+    public Variable(GrammarParser.FormalParameterContext ctx) {
+        type = Type.recognize(ctx.type());
+        name = ctx.name().getText();
+    }
+
+    public Variable(GrammarParser.VariableDeclarationContext ctx) {
+        Variable prototype = recognize(ctx).get(0);
+        type = prototype.type;
+        name = prototype.name;
+    }
     
-    public Variable(parsed.Variable ref) {
-        type = Type.recognize(ref.type);
+    public static List<Variable> recognize(GrammarParser.VariableDeclarationContext ctx) {
+        List<Variable> list = new ArrayList<>();
+        Type type = Type.recognize(ctx.type());
         if(type == Type.VOID) {
-            Recover.exit(3, "unexpected void type");
+            Recover.type("cannot declare void variable");
         }
-        name = ref.name;
+        ctx.name().forEach(name -> list.add(new Variable(type, name.getText())));
+        return list;
     }
 }

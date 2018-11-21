@@ -1,21 +1,19 @@
+
 class A : Object {
 	int a;
 	string b;
 
 	void A(void) {
 		this.a = 42;
-		this.b = 42;
+		this.b = "42";
 	}
 
 	void method(int a) {
 		this.a = 42;
 		a = 42+123*0;
-		if(123 != a) {
-
-		} else {
-
-		}
+		if(123) {} else {}
 		main();
+		this.b = "asdf";
 	}
 
 }
@@ -26,9 +24,18 @@ class B : A {
 		B b;
 		a = b;
 	}
+
+	void A(void) {}
+
+	void print(B b) {
+		this = b;
+	}
 }
 
+
 void main(void) {
-	A a;
-	B b;
+	int a;
+	a = 0;
+	//print(43, "hello", new A);
+
 }

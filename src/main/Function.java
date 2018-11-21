@@ -1,82 +1,85 @@
 package main;
 
+import parser.GrammarParser;
+
 import java.util.List;
 import java.util.ArrayList;
 
 public class Function {
-    public parsed.Function prototype;
-    
+
+    public Class context;
     public Type type;
     public String name;
-    public List<Variable> parameters;
     
-    public List<Type> signature;
+    public Variable self; // aka "this"
+    public List<Variable> parameters; // in the declaration order, excluds self-parameter
+    public List<Type> signature; // for fast reference
     public SymbolTable<Variable> scope;
     
+    public GrammarParser.BlockContext bodyContext;
     public List<Statement> body;
-    
-    public Class context;
 
-    public Function(
-        Type type, String name, List<Variable> parameters,
-        List<Statement> body, Class context
-    ) {
-        prototype = null;
+    public Function(Type type, String name, List<Variable> parameters, Class context) {
+        this.context = context;
         this.type = type;
         this.name = name;
-        this.parameters = parameters;
-        this.body = body;
-        this.context = context;
+        
+        if(parameters == null) {
+            parameters = new ArrayList<>();
+        }
+        this.parameters = parameters;        
         
         initialize();
     }
 
-    public Function(parsed.Function prototype, Class context) {
-        this.prototype = prototype;
-        type = Type.recognize(prototype.type);
-        name = prototype.name;
-        parameters = new ArrayList<>();
+    public Function (GrammarParser.FunctionDefinitionContext ctx, Class context) {
         this.context = context;
-        prototype.parameters.forEach(parsed -> parameters.add(new Variable(parsed)));
+        type = Type.recognize(ctx.type());
+        name = ctx.name().getText();
+        
+        parameters = new ArrayList<>();
+        ctx.paramList().formalParameter().forEach(par -> parameters.add(new Variable(par)));
+        
+        bodyContext = ctx.block();
 
         initialize();
     }
 
     public void initialize() {
         scope = new SymbolTable<>();
+        
+        if(context != null) {
+            self = new Variable(context, "this");
+            scope.register(self.name, self);
+        }
+
         signature = new ArrayList<>();
         parameters.forEach(v -> {
             SymbolTable.classes.assertNonExistence(v.name);
             SymbolTable.functions.assertNonExistence(v.name);
-            scope.register(v.name, v);
             signature.add(v.type);
+            scope.register(v.name, v);
         });
-
-        if(context != null) {
-            Variable selfParameter = new Variable(context, "this");
-            scope.register(selfParameter.name, selfParameter);
-        }
-    }
-
-    public void collectBody() {
-        if(prototype == null) {
-            System.out.println("Skipping " + name);
-            return;
-        }
-        body = new ArrayList<>();
-        prototype.body.forEach(s -> body.add(new Statement(s, scope)));
-    }
-
-    public void inferType() {
-        body.forEach(s -> s.inferType());
     }
 
     public boolean signatureMatch(Type type, List<Type> signature) {
+        if(context == null && name.equals("print")) {
+            // can print any primitive type
+            for(Type arg: signature) {
+                if(arg instanceof Class) {
+                    return false;
+                }
+            }
+            return true;
+        }
         return this.type == type && this.signature.equals(signature);
     }
 
-    public boolean signatureMatch(Function f) {
-        return signatureMatch(f.type, f.signature);
+    public void collectBody() {
+        if(bodyContext == null) {
+            // System.err.println("Skipping body of " + name);
+            return;
+        }
+        body = Statement.recognize(this, scope, bodyContext);
     }
-
 }
