@@ -1,49 +1,34 @@
 class A : Object {
-	Object a;
-	int b;
+	int a;
+	string b;
 
-	void c(void) {}
+	void A(void) {
+		this.a = 42;
+		this.b = 42;
+	}
 
-	void A(void) {}
+	void method(int a) {
+		this.a = 42;
+		a = 42+123*0;
+		if(123 != a) {
 
-	string toString(void) {}
-}
-
-class B : A {
-	A e;
-
-	void c(void) {
-		this.e = (23);
-		this.c();
-		main();
-		int a;
-		a = (B) a;
-		a = 2 + (new Object).main((new Object));
-		a = 3;
-		/*
-		if(12) {
-			int a;
-			a = 1;
-			while(a) {
-				main2();
-				main();
-				string a;
-			}
 		} else {
 
 		}
-		*/
+		main();
+	}
+
+}
+
+class B : A {
+	int method2(void) {
+		A a;
+		B b;
+		a = b;
 	}
 }
 
 void main(void) {
 	A a;
 	B b;
-	b.a = 23;
-	b.a.toString();
-}
-
-void main2(int a, int b) {
-	//int a;
-	//int a;
 }

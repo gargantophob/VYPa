@@ -57,4 +57,48 @@ public class Statement {
                 break;
         }
     }
+
+    public void inferType() {
+        if(path != null) {
+            path.inferType();
+        }
+        if(expression != null) {
+            expression.inferType();
+        }
+        if(body != null) {
+            body.inferType();
+        }
+        if(bodyElse != null) {
+            bodyElse.inferType();
+        }
+        if(call != null) {
+            call.inferType();
+        }
+
+        boolean errorFlag = false;
+
+        if(option == Option.ASSIGNMENT) {
+            Type p = path.type;
+            Type e = expression.type;
+            if(p != e) {
+                if(!(p instanceof Class) || !(e instanceof Class)) {
+                    errorFlag = true;
+                } else {
+                    if(!(((Class) e).isSubclassOf((Class) p))) {
+                        errorFlag = true;
+                    }
+                }
+            }
+        }
+
+        if(option == Option.CONDITIONAL || option == Option.ITERATION) {
+            if(expression.type == Type.STRING) {
+                errorFlag = true;
+            }
+        }
+
+        if(errorFlag) {
+            Recover.exit(4, "type mismatch");
+        }
+    }
 }

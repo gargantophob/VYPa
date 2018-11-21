@@ -67,6 +67,10 @@ public class Function {
         prototype.body.forEach(s -> body.add(new Statement(s, scope)));
     }
 
+    public void inferType() {
+        body.forEach(s -> s.inferType());
+    }
+
     public boolean signatureMatch(Type type, List<Type> signature) {
         return this.type == type && this.signature.equals(signature);
     }

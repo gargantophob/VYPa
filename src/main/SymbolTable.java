@@ -36,6 +36,30 @@ public class SymbolTable<T> {
 	}
 	
 	public static void collectFunctionHeaders(List<parsed.Function> functionsList) {
+		// built-in functions
+		Function g;
+		
+		g = new Function(Type.STRING, "print", new ArrayList<>(), new ArrayList<>(), null);
+		functions.register(g.name, g);
+		
+		g = new Function(Type.INT, "readInt", new ArrayList<>(), new ArrayList<>(), null);
+		functions.register(g.name, g);
+		
+		g = new Function(Type.STRING, "readString", new ArrayList<>(), new ArrayList<>(), null);
+		functions.register(g.name, g);
+		
+		List<Variable> lengthArguments = new ArrayList<>();
+		lengthArguments.add(new Variable(Type.STRING, "s"));
+		g = new Function(Type.INT, "length", lengthArguments, new ArrayList<>(), null);
+		functions.register(g.name, g);
+
+		List<Variable> subStrArguments = new ArrayList<>();
+		subStrArguments.add(new Variable(Type.STRING, "s"));
+		subStrArguments.add(new Variable(Type.INT, "i"));
+		subStrArguments.add(new Variable(Type.INT, "n"));
+		g = new Function(Type.STRING, "subStr", subStrArguments, new ArrayList<>(), null);
+		functions.register(g.name, g);
+
 		functionsList.forEach(parsed -> {
 			Function f = new Function(parsed, null);
 			functions.register(f.name, f);
@@ -50,6 +74,11 @@ public class SymbolTable<T> {
 	public static void collectBodies() {
 		functions.symbols.values().forEach(f -> f.collectBody());
 		classes.symbols.values().forEach(c -> c.collectBody());
+	}
+
+	public static void inferType() {
+		functions.symbols.values().forEach(f -> f.inferType());
+		classes.symbols.values().forEach(c -> c.inferType());
 	}
 
 	public Map<String,T> symbols;

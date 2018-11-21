@@ -1,20 +1,30 @@
 package main;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
+import parser.*;
+import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.tree.*;
+
+// import java.util.List;
+// import java.util.ArrayList;
 
 public class Program {
-    public Program(parsed.Program parsed) {
-    	SymbolTable.initialize();
+    
+    public Program(GrammarParser parser) {
+        
+        // Collect class names
+        SymbolTable.initialize();
+        GrammarParser.ProgramContext program = parser.program();
         SymbolTable.collectClassNames(parsed.classes);
-        SymbolTable.collectClassBases();
+
+        classes.add(new Class((GrammarParser.ClassDefinitionContext) def));
+        // functions.add(new Function((GrammarParser.FunctionDefinitionContext) def));
+
+        /*SymbolTable.collectClassBases();
         SymbolTable.collectClassMembers();
         SymbolTable.collectFunctionHeaders(parsed.functions);
         SymbolTable.collectBodies();
-
-        // symbols collected (except literals)
-	}
+        SymbolTable.inferType();
+*/
+    }
 }
 

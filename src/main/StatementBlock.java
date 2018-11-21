@@ -16,4 +16,8 @@ public class StatementBlock {
         statements = new ArrayList<>();
         parsed.forEach(s -> statements.add(new Statement(s, scope)));
     }
+
+    public void inferType() {
+    	statements.forEach(s -> s.inferType());
+    }
 }

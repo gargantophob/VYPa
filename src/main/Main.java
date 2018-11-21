@@ -66,11 +66,8 @@ public class Main {
         parser.removeErrorListener(ConsoleErrorListener.INSTANCE);
         checkSyntacticErrors(parser);
 
-        // Walk through parsed structures
-        parsed.Program parsed = new parsed.Program(parser);
-
-        // Semantic check
-        Program p = new Program(parsed);
+        // Semantic analysis
+        Program parsed = new Program(parser);
         
         // Store output
         String output = "TODO";

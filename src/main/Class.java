@@ -6,13 +6,7 @@ import java.util.ArrayList;
 import java.util.Set;
 
 public class Class extends Type {
-    static class A {
-        void a(A a) {}
-    }
-    static class B extends A {
-        void a(B a) {}
-        // void a(A a) {}
-    }
+    
     public parsed.Class prototype;
 
     public String name;
@@ -143,6 +137,20 @@ public class Class extends Type {
 
     public void collectBody() {
         methods.symbols.values().forEach(f -> f.collectBody());
+    }
+
+    public void inferType() {
+        methods.symbols.values().forEach(f -> f.inferType());
+    }
+
+    public boolean isSubclassOf(Class superclass) {
+        if(superclass == this) {
+            return true;
+        } else if(base != null) {
+            return base.isSubclassOf(superclass);
+        } else {
+            return false;
+        }
     }
 
     public boolean isDefinedAttribute(String name) {

@@ -7,6 +7,7 @@ public class Path {
     
     public Variable root;
     public List<Variable> path;
+    public Type type;
     
     public Path(parsed.Path parsed, SymbolTable<Variable> scope) {
         List<String> names = parsed.names;
@@ -25,11 +26,11 @@ public class Path {
         }
     }
 
-    public Variable lastVariable() {
+    public void inferType() {
         if(path.size() == 0) {
-            return root;
+            type = root.type;
         } else {
-            return path.get(path.size()-1);
+            type = path.get(path.size()-1).type;
         }
     }
 }
