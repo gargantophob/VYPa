@@ -59,7 +59,7 @@ public class Main {
         Program program = new Program(parser);
         
         // Produce output
-        String output = program.code();
+        String output = Code.code();
         try (PrintStream out = new PrintStream(new FileOutputStream(args[1]))) {
 		    out.print(output);
 		} catch(java.io.FileNotFoundException e) {

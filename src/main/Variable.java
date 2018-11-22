@@ -9,6 +9,7 @@ public class Variable {
     
     public Type type;
     public String name;
+    public int order;
 
     public Variable(Type type, String name) {
         this.type = type;

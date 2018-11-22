@@ -151,9 +151,10 @@ public class Statement {
     ) {
         List<Statement> list = new ArrayList<>();
         if(ctx.variableDeclaration() != null) {
-            Variable.recognize(ctx.variableDeclaration()).forEach(v ->
-                list.add(new Statement(context, scope, v))
-            );
+            Variable.recognize(ctx.variableDeclaration()).forEach(v -> {
+                v.order = context.order();
+                list.add(new Statement(context, scope, v));
+            });
             return list;
         }
         

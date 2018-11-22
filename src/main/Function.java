@@ -19,6 +19,8 @@ public class Function {
     public GrammarParser.BlockContext bodyContext;
     public List<Statement> body;
 
+    public int order;
+
     public Function(Type type, String name, List<Variable> parameters, Class context) {
         this.context = context;
         this.type = type;
@@ -27,7 +29,7 @@ public class Function {
         if(parameters == null) {
             parameters = new ArrayList<>();
         }
-        this.parameters = parameters;        
+        this.parameters = parameters;
         
         initialize();
     }
@@ -54,12 +56,21 @@ public class Function {
         }
 
         signature = new ArrayList<>();
-        parameters.forEach(v -> {
+        order = -1;
+        for(Variable v: parameters) {
             SymbolTable.classes.assertNonExistence(v.name);
             SymbolTable.functions.assertNonExistence(v.name);
             signature.add(v.type);
             scope.register(v.name, v);
-        });
+            v.order = order;
+            order--;
+        }
+        order = 0;
+    }
+
+    public int order() {
+        order++;
+        return order;
     }
 
     public boolean signatureMatch(Type type, List<Type> signature) {

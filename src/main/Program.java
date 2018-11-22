@@ -28,7 +28,7 @@ public class Program {
         /*****************************/
 
         // Assemble built-in functions
-        SymbolTable.registerFunction(new Function(Type.STRING, "print", null, null));
+        SymbolTable.registerFunction(new Function(Type.VOID, "print", null, null));
         SymbolTable.registerFunction(new Function(Type.INT, "readInt", null, null));
         SymbolTable.registerFunction(new Function(Type.STRING, "readString", null, null));
         
@@ -61,12 +61,8 @@ public class Program {
         // Process procedure bodies
         SymbolTable.functions().forEach(f -> f.collectBody());
         SymbolTable.classes().forEach(c -> c.collectBody());
-    }
 
-    /*****************************/
-
-    public String code() {
-        return "TODO";
+        /*****************************/        
     }
 }
 

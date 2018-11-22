@@ -25,7 +25,7 @@ public class Literal {
             }
         } else {
             type = Type.STRING;
-            text = text.substring(1, text.length()-1); // removes quotes
+            // text = text.substring(1, text.length()-1); // removes quotes
         }
     }
 

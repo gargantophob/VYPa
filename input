@@ -1,41 +1,14 @@
-
-class A : Object {
-	int a;
-	string b;
-
-	void A(void) {
-		this.a = 42;
-		this.b = "42";
-	}
-
-	void method(int a) {
-		this.a = 42;
-		a = 42+123*0;
-		if(123) {} else {}
-		main();
-		this.b = "asdf";
-	}
-
-}
-
-class B : A {
-	int method2(void) {
-		A a;
-		B b;
-		a = b;
-	}
-
-	void A(void) {}
-
-	void print(B b) {
-		this = b;
-	}
-}
-
-
 void main(void) {
 	int a;
 	a = 0;
-	//print(43, "hello", new A);
-
+	int b;
+	if(1) {
+		int a;
+		a = 123;
+	} else {
+		string a;
+		a = "Hello";
+		print(a);
+	}
+	print(a);
 }
