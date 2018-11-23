@@ -2,7 +2,6 @@
 
 # R0 - framepointer
 # R1 - expression result / function return value
-# R2 - ?
 ALIAS FP $0
 SET $0 0
 SET $1 0
@@ -14,46 +13,84 @@ JUMP @exit
 # ***** GLOBAL FUNCTIONS *****
 
 # ----------------------
-LABEL ::print
-
-# Store frame pointer
+LABEL ::foo
 SET $FP $SP
-
-# Allocate local variables, they will be initialized at their declaration site
 ADDI $SP $SP 0
 
-# TODO
 
-# Hard return
+ADDI $SP $SP 1
+SET [$SP] [$FP-1]
+ADDI $SP $SP 1
+SET [$SP] 10
+LTI $1 [$SP-1] [$SP]
+SUBI $SP $SP 1
+SET [$SP] $1
+ADDI $SP $SP 1
+SET [$SP] [$FP-1]
+ADDI $SP $SP 1
+SET [$SP] 10
+EQI $1 [$SP-1] [$SP]
+SUBI $SP $SP 1
+SET [$SP] $1
+OR $1 [$SP-1] [$SP]
+SUBI $SP $SP 1
+SET [$SP] $1
+SET $1 [$SP]
+SUBI $SP $SP 1
+JUMPZ ::foo:0:else $1
+
+ADDI $SP $SP 1
+SET [$SP] [$FP-1]
+SET $1 [$SP]
+SUBI $SP $SP 1
 SET $SP $FP
 RETURN [$FP]
+JUMP ::foo:0:end_if
+LABEL ::foo:0:else
+LABEL ::foo:0:end_if
 
-# ----------------------
-LABEL ::readString
+ADDI $SP $SP 1
+SET [$SP] [$FP-1]
+SET $1 [$SP]
+SUBI $SP $SP 1
+WRITEI $1
+ADDI $SP $SP 1
+SET [$SP] "\n"
+SET $1 [$SP]
+SUBI $SP $SP 1
+WRITES $1
 
-# Store frame pointer
-SET $FP $SP
+ADDI $SP $SP 1
+SET [$SP] [$FP-1]
+ADDI $SP $SP 1
+SET [$SP] 1
+SUBI $1 [$SP-1] [$SP]
+SUBI $SP $SP 1
+SET [$SP] $1
+SET [$FP-1] [$SP]
+SUBI $SP $SP 1
 
-# Allocate local variables, they will be initialized at their declaration site
-ADDI $SP $SP 0
-
-# TODO
+ADDI $SP $SP 1
+SET [$SP] $FP
+ADDI $SP $SP 1
+SET [$SP] [$FP-1]
+ADDI $SP $SP 1
+CALL [$SP] ::foo
+SUBI $SP $SP 2
+SET $FP [$SP]
+SUBI $SP $SP 1
 
 # Hard return
-SET $1 ""
+SET $1 0
 SET $SP $FP
 RETURN [$FP]
 
 # ----------------------
 LABEL ::length
-
-# Store frame pointer
 SET $FP $SP
-
-# Allocate local variables, they will be initialized at their declaration site
 ADDI $SP $SP 0
 
-# TODO
+GETSIZE $1 [$SP-1]
 
 # Hard return
 SET $1 0
@@ -62,14 +99,10 @@ RETURN [$FP]
 
 # ----------------------
 LABEL ::subStr
-
-# Store frame pointer
 SET $FP $SP
-
-# Allocate local variables, they will be initialized at their declaration site
 ADDI $SP $SP 0
 
-# TODO
+WRITES "LOL"
 
 # Hard return
 SET $1 ""
@@ -78,31 +111,45 @@ RETURN [$FP]
 
 # ----------------------
 LABEL ::main
-
-# Store frame pointer
 SET $FP $SP
+ADDI $SP $SP 2
 
-# Allocate local variables, they will be initialized at their declaration site
-ADDI $SP $SP 4
 
+SET [$FP+1] ""
+
+SET [$FP+2] ""
+
+ADDI $SP $SP 1
+SET [$SP] "a"
+SET [$FP+1] [$SP]
+SUBI $SP $SP 1
+
+ADDI $SP $SP 1
+SET [$SP] "b"
+SET [$FP+2] [$SP]
+SUBI $SP $SP 1
+
+ADDI $SP $SP 1
+SET [$SP] "asdfza"
+ADDI $SP $SP 1
+SET [$SP] "asdfg"
+LTS $1 [$SP-1] [$SP]
+SUBI $SP $SP 1
+SET [$SP] $1
+SET $1 [$SP]
+SUBI $SP $SP 1
+JUMPZ ::main:0:else $1
+
+ADDI $SP $SP 1
+SET [$SP] "true\n"
+SET $1 [$SP]
+SUBI $SP $SP 1
+WRITES $1
+JUMP ::main:0:end_if
+LABEL ::main:0:else
+LABEL ::main:0:end_if
 
 # Hard return
-SET $SP $FP
-RETURN [$FP]
-
-# ----------------------
-LABEL ::readInt
-
-# Store frame pointer
-SET $FP $SP
-
-# Allocate local variables, they will be initialized at their declaration site
-ADDI $SP $SP 0
-
-# TODO
-
-# Hard return
-SET $1 0
 SET $SP $FP
 RETURN [$FP]
 
