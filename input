@@ -1,18 +1,25 @@
-void main(void) {
-	string a,b;
-	a = "a";
-	b = "b";
-	if("asdfza" < "asdfg") {
-		print("true\n");
-	} else {}
-	
+class A : Object {
+	int att;
+	void A(void) {}
+	int foo(int a) {
+		this.att = 1;
+		print(this.att);
+	}
+	int bar(int a) {}
 }
 
-int foo(int a) {
-	if(a <= 10) {
-		return a;
-	} else {}
-	print(a, "\n");
-	a = a-1;
-	foo(a);
+class B : A {
+	void B(void) {}
+	int foo(int a) {}
+}
+
+void main(void) {
+	Object o;
+	o = new Object;
+	print(o.toString());
+	A a;
+	a = new A;
+	a.foo(42);
+	a.foo(42);
+	print(a.att);
 }

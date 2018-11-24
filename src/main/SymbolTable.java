@@ -55,15 +55,23 @@ public class SymbolTable<T> {
 	/**************************************************/
 
 	public static SymbolTable<Class> classes;
+	public static int classIndex;
 	public static SymbolTable<Function> functions;
 
 	public static void initialize() {
 		classes = new SymbolTable<>();
+		classIndex = 0;
 		functions = new SymbolTable<>();
 	}
 	
 	public static Collection<Class> classes() {
 		return classes.values();
+	}
+
+	public static int nextClassIndex() {
+		int res = classIndex;
+		classIndex++;
+		return res;
 	}
 
 	public static Collection<Function> functions() {

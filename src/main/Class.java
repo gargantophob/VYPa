@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 public class Class extends Type {
     
+    public int classIndex;
     public String name;
     public String baseName;
     public Class base;
@@ -16,8 +17,11 @@ public class Class extends Type {
     public List<Variable> attributeList;
     public List<Function> methodList;
 
+    public boolean membersCollected;
+
     public Class() {
         // Assemble Object class
+        classIndex = SymbolTable.nextClassIndex();        
         name = "Object";
         baseName = null;
         base = null;
@@ -30,14 +34,18 @@ public class Class extends Type {
         methodList = new ArrayList<>();
         methodList.add(new Function(Type.STRING, "toString", null, this));
         methodList.add(new Function(Type.STRING, "getClass", null, this));
+
+        membersCollected = false;
     }
 
     public Class(GrammarParser.ClassDefinitionContext ctx) {
+        classIndex = SymbolTable.nextClassIndex();
         name = ctx.name().get(0).getText();
         baseName = ctx.name().get(1).getText();
         base = null;
         attributeDefinitions = ctx.variableDeclaration();
         methodDefinitions = ctx.functionDefinition();
+        membersCollected = false;
     }
 
     /*****************************/
@@ -66,13 +74,25 @@ public class Class extends Type {
 
     /*****************************/
 
+    public int attributeIndex;
     public SymbolTable<Variable> attributes;
+
     public Function constructor;
+    
+    public int methodIndex;
     public SymbolTable<Function> methods;
     public Variable self;
 
     public void collectMembers() {
+        if(membersCollected) {
+            return;
+        }
 
+        // Process base
+        if(base != null && !base.membersCollected) {
+            base.collectMembers();
+        }
+        
         // Collect attributes
         if(attributeDefinitions != null) {
             attributeList = new ArrayList<>();
@@ -80,8 +100,13 @@ public class Class extends Type {
                 Variable.recognize(ctx).forEach(v -> attributeList.add(v))
             );
         }
+        attributeIndex = base == null ? 0 : base.attributeIndex;
         attributes = new SymbolTable<>();
-        attributeList.forEach(v -> attributes.register(v.name, v));
+        attributeList.forEach(v -> {
+            attributes.register(v.name, v);
+            v.order = attributeIndex;
+            attributeIndex++;
+        });
 
         // Collect methods
         if(methodDefinitions != null) {
@@ -90,8 +115,12 @@ public class Class extends Type {
                 methodList.add(new Function(ctx, this))
             );
         }
+        methodIndex = base == null ? 0 : base.methodIndex;
         methods = new SymbolTable<>();
-        methodList.forEach(f -> methods.register(f.name, f));
+        methodList.forEach(f -> {
+            methods.register(f.name, f);
+            // method order is at overriding check
+        });
 
         // Collect constructor
         if(methods.isDefined(name)) {
@@ -100,15 +129,13 @@ public class Class extends Type {
             if(!constructor.signatureMatch(Type.VOID, new ArrayList<>())) {
                 Recover.type(this.name + ": bad constructor signature");
             }
+            methodList.remove(constructor);
             methods.remove(name);
         } else {
             // Implicit constructor
             constructor = new Function(Type.VOID, name, null, this);
         }
 
-    }
-
-    public void checkMembers() {
         // Two fields cannot have the same name
         if(!java.util.Collections.disjoint(attributes.names(), methods.names())) {
             Recover.semantic(this.name + ": redefinition of a field");
@@ -124,17 +151,23 @@ public class Class extends Type {
         }
         
         // Can override only methods with the same signature
-        if(base != null) {
-            methods.names().forEach(name -> {
-                if(base.isDefinedMethod(name)) {
-                    Function a = methods.lookUp(name);
-                    Function b = base.lookUpMethod(name);
-                    if(!a.signatureMatch(b.type, b.signature)) {
-                        Recover.semantic(this.name + ": overriding method with different signature");
-                    }
+        methods.names().forEach(name -> {
+            Function a = methods.lookUp(name);
+            if(base != null && base.isDefinedMethod(name)) {
+                // override
+                Function b = base.lookUpMethod(name);
+                if(!a.signatureMatch(b.type, b.signature)) {
+                    Recover.semantic(this.name + ": overriding method with different signature");
                 }
-            });
-        }
+                a.order = b.order;
+            } else {
+                a.order = methodIndex;
+                methodIndex++;
+            }
+        });
+
+        // success
+        membersCollected = true;
     }
 
     public boolean isDefinedAttribute(String name) {
@@ -187,7 +220,7 @@ public class Class extends Type {
             Recover.semantic(this.name + ": method " + name + " cannot be 'super'");
         }
         return base.lookUpMethod(name);
-    }    
+    }
 
     /*****************************/
 
@@ -195,4 +228,27 @@ public class Class extends Type {
         constructor.collectBody();
         methods.values().forEach(f -> f.collectBody());
     }
+
+    public Function lookUpMethod(int index) {
+        if(index >= methodIndex) {
+            Recover.warn("VMT invalid search");
+            return null;
+        }
+        for(Function f: methodList) {
+            if(f.order == index) {
+                return f;
+            }
+        }
+        return base.lookUpMethod(index);
+    }
+
+    public List<Function> VMT() {
+        System.out.println("Processing " + name + ": expecting " + methodIndex);
+        List<Function> list = new ArrayList<>();
+        for(int i = 0; i < methodIndex; i++) {
+            list.add(lookUpMethod(i));
+        }
+        return list;
+    }
+
 }

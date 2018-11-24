@@ -56,7 +56,6 @@ public class Program {
 
         // Collect class members
         SymbolTable.classes().forEach(c -> c.collectMembers());
-        SymbolTable.classes().forEach(c -> c.checkMembers());
 
         // Process procedure bodies
         SymbolTable.functions().forEach(f -> f.collectBody());

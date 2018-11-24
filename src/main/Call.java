@@ -24,6 +24,7 @@ public class Call  {
     ) {
         this.context = context;
         this.scope = scope;
+        this.contextObject = contextObject;
         this.name = name;
         
         if(isSuper) {
