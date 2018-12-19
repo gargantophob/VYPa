@@ -1,13 +1,19 @@
+/*
+ * VYPa 2018 - VYPcode compiler.
+ * Roman Andriushchenko (xandri03)
+ */
 package main;
 
 import parser.*;
 import org.antlr.v4.runtime.*;
 
-import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.io.FileOutputStream;
 
+/**
+ * Program entry point.
+ */
 public class Main {
-	
 	public static void main(String[] args) {
         assert args.length == 2;
 
@@ -55,11 +61,11 @@ public class Main {
         parser.removeErrorListener(listenerSyntactic);
         parser.reset();
 
-        // Semantic analysis
+        // Parse the tree and construct the program
         Program program = new Program(parser);
         
         // Produce output
-        String output = Code.code();
+        String output = program.code();
         try (PrintStream out = new PrintStream(new FileOutputStream(args[1]))) {
 		    out.print(output);
 		} catch(java.io.FileNotFoundException e) {

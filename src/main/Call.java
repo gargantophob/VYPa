@@ -1,3 +1,8 @@
+/*
+ * VYPa 2018 - VYPcode compiler.
+ * Roman Andriushchenko (xandri03)
+ */
+
 package main;
 
 import parser.GrammarParser;
@@ -5,90 +10,120 @@ import parser.GrammarParser;
 import java.util.List;
 import java.util.ArrayList;
 
+/** Function call. */
 public class Call  {
 
-    public Function context;
+    /** Context function. */
+    public Function contextFunction;
+    /** Current scope. */
     public SymbolTable<Variable> scope;
     
-    public Expression contextObject;
+    /** Co-expression. */
+    public Expression coExpression;
+    /** Callee name. */
     public String name;
+    /** Overridden call. */
+    public boolean isSuper;
+
+    /** List of arguments. */
     public List<Expression> arguments;
     
+    /** Explicit callee. */
     public Function function;
+    /** Inferred type. */
     public Type type;
 
-    protected Call(
-        Function context, SymbolTable<Variable> scope,
-        boolean isSuper, Expression contextObject, String name,
-        List<GrammarParser.ExContext> arguments
-    ) {
-        this.context = context;
-        this.scope = scope;
-        this.contextObject = contextObject;
-        this.name = name;
-        
-        if(isSuper) {
-            Class contextClass = context.context;
-            if(contextClass == null) {
-                Recover.semantic(context.name + ": 'super' keyword in a global function");
-            }
-            function = contextClass.lookUpSuperMethod(name);
-        } else if(contextObject != null) {
-            if(!(contextObject.type instanceof Class)) {
-                Recover.type(context.name + ": coexpression is not of object type");
-            }
-            function = ((Class) contextObject.type).lookUpMethod(name);
-        } else {
-            function = SymbolTable.functions.lookUp(name);
-        }
-                
-        type = function.type;
-
-        this.arguments = new ArrayList<>();
-        arguments.forEach(e -> this.arguments.add(Expression.recognize(context, scope, e)));
-
-        List<Type> signature = new ArrayList<>();
-        this.arguments.forEach(e -> signature.add(e.type));
-        if(!function.signatureMatch(type, signature)) {
-            Recover.type(context.name + ": invalid function call");
-        }
-    }
-
+    /** Recognize statement call. */
     public static Call recognize(
-        Function context, SymbolTable<Variable> scope, GrammarParser.CallContext ctx
+        Function contextFunction, SymbolTable<Variable> scope,
+        GrammarParser.CallContext ctx
     ) {
-        String name = ctx.name().getText();
-        List<GrammarParser.ExContext> arguments = ctx.arguments().ex();
+        Call call = new Call();
+        call.contextFunction = contextFunction;
+        call.scope = scope;
+        call.name = ctx.name().getText();
+        call.isSuper = false;
         
-        boolean isSuper = false;
-        Expression contextObject = null;
         if(ctx.getChild(1).getText().equals(".")) {
             if(ctx.ex() != null) {
-                contextObject = Expression.recognize(context, scope, ctx.ex());
+                call.coExpression = Expression.recognize(contextFunction, scope, ctx.ex());
             } else {
-                isSuper = true;
+                call.isSuper = true;
             }
         }
 
-        return new Call(context, scope, isSuper, contextObject, name, arguments);
+        call.arguments = new ArrayList<>();
+        ctx.arguments().ex().forEach(ectx -> 
+            call.arguments.add(Expression.recognize(contextFunction, scope, ectx))
+        );
+
+        call.check();
+        return call;
     }
 
+    /** Recognize expression call. */
     public static Call recognize(
-        Function context, SymbolTable<Variable> scope, GrammarParser.ExContext ctx
+        Function contextFunction, SymbolTable<Variable> scope, GrammarParser.ExContext ctx
     ) {
-        String name = ctx.name().getText();
-        List<GrammarParser.ExContext> arguments = ctx.arguments().ex();
+        Call call = new Call();
+        call.contextFunction = contextFunction;
+        call.scope = scope;
+        call.name = ctx.name().getText();
+        call.isSuper = false;
         
-        boolean isSuper = false;
-        Expression contextObject = null;
         if(ctx.getChild(1).getText().equals(".")) {
             if(ctx.ex().size() > 0) {
-                contextObject = Expression.recognize(context, scope, ctx.ex().get(0));
+                call.coExpression = Expression.recognize(contextFunction, scope, ctx.ex().get(0));
             } else {
-                isSuper = true;
+                call.isSuper = true;
             }
         }
 
-        return new Call(context, scope, isSuper, contextObject, name, arguments);
-    }    
+        call.arguments = new ArrayList<>();
+        ctx.arguments().ex().forEach(ectx -> 
+            call.arguments.add(Expression.recognize(contextFunction, scope, ectx))
+        );
+        
+        call.check();
+        return call;
+    }
+
+    /** Parse call context. */
+    public void check() {
+        // Detect function signature
+        if(isSuper) {
+            Class contextClass = contextFunction.contextClass;
+            if(contextClass == null) {
+                Recover.semantic(contextFunction.name + ": 'super' keyword in a global function");
+            }
+            function = contextClass.lookUpSuperMethod(name);
+            
+            // Add implicit self-parameter
+            List<Variable> path = new ArrayList<>();
+            path.add(contextFunction.parameters.get(0));
+            arguments.add(0, new Expression(
+                new Path(contextFunction, contextFunction.scope, path)
+            ));
+        } else if(coExpression != null) {
+            if(!(coExpression.type instanceof Class)) {
+                Recover.type(contextFunction.name + ": coexpression is not of object type");
+            }
+            function = ((Class) coExpression.type).lookUpMethod(name);
+            
+            // Add implicit self-parameter
+            arguments.add(0, coExpression);
+        } else {
+            function = Function.table.lookUp(name);
+        }
+             
+        // Infer the type   
+        type = function.type;
+
+        // Check signature
+        List<Type> signature = new ArrayList<>();
+        arguments.forEach(e -> signature.add(e.type));
+        if(!function.signatureMatchSubtype(signature)) {
+            Recover.type(contextFunction.name + ": invalid function call");
+        }
+    }
 }

@@ -10,7 +10,9 @@ class A : Object {
 
 class B : A {
 	void B(void) {}
-	int foo(int a) {}
+	int foo(int a) {
+		return super.foo(a);
+	}
 }
 
 void main(void) {
@@ -22,4 +24,5 @@ void main(void) {
 	a.foo(42);
 	a.foo(42);
 	print(a.att);
+	print(42);
 }

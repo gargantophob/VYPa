@@ -1,3 +1,8 @@
+/*
+ * VYPa 2018 - VYPcode compiler.
+ * Roman Andriushchenko (xandri03)
+ */
+
 package main;
 
 import java.util.Map;
@@ -6,47 +11,60 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.Collection;
 
-public class SymbolTable<T> {
+/**
+ * Generic symbol table.
+ */
+public class SymbolTable<T extends Named> {
 
+	/** name -> object mapping. */
 	public Map<String,T> symbols;
 	
+	/** Initialize a symbol table. */
 	public SymbolTable() {
 		symbols = new HashMap<>();
 	}
 
+	/** Retreive set of keys. */
 	public Set<String> names() {
 		return symbols.keySet();
 	}
 	
+	/** Retreive set of values. */
 	public Collection<T> values() {
 		return symbols.values();
 	}
 
+	/** @return true if the symbol is defined */
 	public boolean isDefined(String name) {
 		return symbols.containsKey(name);
 	}
 
+	/** Assert existence of a symbol. */
 	public void assertExistence(String name) {
 		if(!isDefined(name)) {
             Recover.semantic("missing definition of symbol " + name);
         }
 	}
 
+	/** Assert non-existence of a symbol. */
 	public void assertNonExistence(String name) {
 		if(isDefined(name)) {
             Recover.semantic("redefinition of symbol " + name);
         }
 	}
 
-	public void register(String name, T t) {
-		assertNonExistence(name);
-		symbols.put(name, t);
+	/** Register a symbol. */
+	public void register(T t) {
+		assertNonExistence(t.name());
+		symbols.put(t.name(), t);
 	}
 
+	/** Remove a symbol. */
 	public void remove(String name) {
 		symbols.remove(name);
 	}
 
+	/** Look up a symbol. */
 	public T lookUp(String name) {
 		assertExistence(name);
 		return symbols.get(name);
@@ -54,47 +72,16 @@ public class SymbolTable<T> {
 	
 	/**************************************************/
 
-	public static SymbolTable<Class> classes;
-	public static int classIndex;
-	public static SymbolTable<Function> functions;
-
-	public static void initialize() {
-		classes = new SymbolTable<>();
-		classIndex = 0;
-		functions = new SymbolTable<>();
-	}
-	
-	public static Collection<Class> classes() {
-		return classes.values();
-	}
-
-	public static int nextClassIndex() {
-		int res = classIndex;
-		classIndex++;
-		return res;
-	}
-
-	public static Collection<Function> functions() {
-		return functions.values();
-	}
-
-	public static void registerClass(Class c) {
-		classes.register(c.name, c);
-	}
-
-	public static void registerFunction(Function f) {
-		functions.register(f.name, f);
-	}
-
-	/**************************************************/
-
+	/** Parent scope for recursive search. */
 	public SymbolTable<T> parentScope;
-	
+
+	/** Create a scope with a parent scope. */
 	public SymbolTable(SymbolTable<T> parentScope) {
 		this();
 		this.parentScope = parentScope;
 	}
 
+	/** @return true if a symbol is defined here or in the parents. */
 	public boolean isDefinedRecursively(String name) {
 		if(isDefined(name)) {
 			return true;
@@ -105,12 +92,14 @@ public class SymbolTable<T> {
 		}
 	}
 
+	/** Assert existence of a symbol here or in the parents. */
 	public void assertExistenceRecursively(String name) {
 		if(!isDefinedRecursively(name)) {
             Recover.semantic("missing definition of symbol " + name);
         }
 	}
 
+	/** Look up a symbol here or in the parents. */
 	public T lookUpRecursively(String name) {
 		assertExistenceRecursively(name);
 		if(isDefined(name)) {

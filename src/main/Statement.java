@@ -1,3 +1,8 @@
+/*
+ * VYPa 2018 - VYPcode compiler.
+ * Roman Andriushchenko (xandri03)
+ */
+
 package main;
 
 import parser.GrammarParser;
@@ -6,197 +11,188 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Statement {
+
+    /** Statement type. */
     public static enum Option {
         DECLARATION, ASSIGNMENT, CONDITIONAL, ITERATION, CALL, RETURN;
     }
 
-    public Function context;
-    public SymbolTable<Variable> scope;
+    /** Context function. */
+    public Function contextFunction;
 
+    /** Statement type. */
     public Option option;
 
-    public Variable declaration;
+    /** Declared variable. */
+    public Variable declared;
+    
+    /** Assignment path. */
     public Path path;
+    /** Expression (assignment, conditional, iteration, return statement). */
     public Expression ex;
     
+    /** True branch (conditional, iteration). */
     public Block blockTrue;
+    /** False branch (conditional). */
     public Block blockFalse;
     
+    /** Function call. */
     public Call call;
 
-    public Statement(
-        Function context, SymbolTable<Variable> scope,
-        Variable declaration
-    ) {
-        this.context = context;
-        this.scope = scope;
-        
-        option = Option.DECLARATION;
-        this.declaration = declaration;
-
-        SymbolTable.classes.assertNonExistence(declaration.name);
-        SymbolTable.functions.assertNonExistence(declaration.name);
-        scope.register(declaration.name, declaration);
-    }
-
-    public Statement(
-        Function context, SymbolTable<Variable> scope,
-        Path path, Expression ex
-    ) {
-        this.context = context;
-        this.scope = scope;
-        
-        option = Option.ASSIGNMENT;
-        this.path = path;
-        this.ex = ex;
-
-        if(context != null && path.handle == context.self && path.path == null) {
-            Recover.semantic("cannot reassign 'this' variable");
-        }
-
-        Type lType = path.type;
-        Type rType = ex.type;
-        if(lType != rType) {
-            if(!(lType instanceof Class) || !(rType instanceof Class)) {
-                Recover.type(context.name + ": assignment primitive type mismatch");
-            } else {
-                Class lClass = (Class) lType;
-                Class rClass = (Class) rType;
-                if(!(rClass.isSubclassOf(lClass))) {
-                    Recover.type(
-                        context.name + ": class " + rClass.name + 
-                        " cannot be assigned as " + lClass.name
-                    );
-                } else {
-                    // Explicit cast
-                    this.ex = new Expression(context, scope, lClass, ex);
-                }
-            }
-        }
-    }
-
-    public Statement(
-        Function context, SymbolTable<Variable> scope,
-        Expression ex, Block blockTrue, Block blockFalse
-    ) {
-        this.context = context;
-        this.scope = scope;
-        
-        option = Option.CONDITIONAL;
-        this.ex = ex;
-        this.blockTrue = blockTrue;
-        this.blockFalse = blockFalse;
-        
-        if(ex.type == Type.STRING) {
-            Recover.type(context.name + ": if() condition cannot be string");
-        }
-    }
-
-    public Statement(
-        Function context, SymbolTable<Variable> scope,
-        Expression ex, Block blockTrue
-    ) {
-        this.context = context;
-        this.scope = scope;
-
-        option = Option.ITERATION;
-        this.ex = ex;
-        this.blockTrue = blockTrue;
-
-        if(ex.type == Type.STRING) {
-            Recover.type(context.name + ": while() condition cannot be string");
-        }
-    }
-
-    public Statement(
-        Function context, SymbolTable<Variable> scope,
-        Call call
-    ) {
-        this.context = context;
-        this.scope = scope;
-
-        option = Option.CALL;
-        this.call = call;
-    }
-
-    public Statement(
-        Function context, SymbolTable<Variable> scope,
-        Expression ex
-    ) {
-        this.context = context;
-        this.scope = scope;
-
-        option = Option.RETURN;
-        this.ex = ex;
-
-        if(ex == null) {
-            if(context.type != Type.VOID) {
-                Recover.type(context.name + ": return statement cannot be empty here");
-            }
-        } else {
-            Type f = context.type;
-            Type e = ex.type;
-            if(f != e) {
-                if(!(f instanceof Class) || !(e instanceof Class)) {
-                    Recover.type(context.name + ": return type mismatch");
-                } else if(!(((Class) e).isSubclassOf((Class) f))) {
-                    Recover.type(context.name + ": return type mismatch");
-                }
-            }
-        }
-    }
-
+    /** Parse a statement. */
     public static List<Statement> recognize(
-        Function context, SymbolTable<Variable> scope, GrammarParser.StatementContext ctx
+        Function contextFunction, SymbolTable<Variable> scope,
+        GrammarParser.StatementContext ctx
     ) {
         List<Statement> list = new ArrayList<>();
+        
         if(ctx.variableDeclaration() != null) {
             Variable.recognize(ctx.variableDeclaration()).forEach(v -> {
-                v.order = context.order();
-                list.add(new Statement(context, scope, v));
+                // Local variable cannot have the same name as some class or
+                // global function
+                Class.table.assertNonExistence(v.name);
+                Function.table.assertNonExistence(v.name);
+
+                // Register variable
+                scope.register(v);
+
+                // Create a statement for initialization
+                Statement s = new Statement();
+                s.contextFunction = contextFunction;
+                s.option = Option.DECLARATION;
+                s.declared = v;
+                list.add(s);
             });
             return list;
         }
         
-        Statement s;
+        Statement s = new Statement();
+        Option option = null;
+        Path path = null;
+        Expression ex = null;
+        Block blockTrue = null;
+        Block blockFalse = null;
+        Call call = null;
+
         if(ctx.assignment() != null) {
-            s = new Statement(
-                context, scope,
-                new Path(context, scope, ctx.assignment().path()),
-                Expression.recognize(context, scope, ctx.assignment().ex())
-            );
-        } else if(ctx.conditional() != null) {
-            s = new Statement(
-                context, scope,
-                Expression.recognize(context, scope, ctx.conditional().ex()),
-                new Block(context, scope, ctx.conditional().block().get(0)),
-                new Block(context, scope, ctx.conditional().block().get(1))
-            );
-        } else if(ctx.iteration() != null) {
-            s = new Statement(
-                context, scope,
-                Expression.recognize(context, scope, ctx.iteration().ex()),
-                new Block(context, scope, ctx.iteration().block())
-            );
-        } else if(ctx.call() != null) {
-            s = new Statement(context, scope, Call.recognize(context, scope, ctx.call()));
-        // } else if(ctx.returnStatement() != null) {
-        } else {
-            Expression ex = null;
-            if(ctx.returnStatement().ex() != null) {
-                ex = Expression.recognize(context, scope, ctx.returnStatement().ex());
+            option = Option.ASSIGNMENT;
+            path = Path.recognize(contextFunction, scope, ctx.assignment().path());
+            ex = Expression.recognize(contextFunction, scope, ctx.assignment().ex());;
+
+            if(
+                contextFunction.contextClass != null
+                && path.path.get(0).name.equals("this")
+                && path.path.size() == 1
+            ) {
+                Recover.semantic("cannot reassign 'this' variable");
             }
-            s = new Statement(context, scope, ex);
+
+            Type lType = path.type;
+            Type rType = ex.type;
+            if(lType != rType) {
+                if(!(lType instanceof Class) || !(rType instanceof Class)) {
+                    Recover.type(contextFunction.name + ": assignment primitive type mismatch");
+                }
+
+                Class lClass = (Class) lType;
+                Class rClass = (Class) rType;
+                if(!(rClass.isSubclassOf(lClass))) {
+                    Recover.type(
+                        contextFunction.name + ": class " + rClass.name + 
+                        " cannot be assigned as " + lClass.name
+                    );
+                } else {
+                    // Explicit cast
+                    ex = new Expression(lClass, ex);
+                }
+            }
+        } else if(ctx.conditional() != null) {
+            option = Option.CONDITIONAL;
+            ex = Expression.recognize(contextFunction, scope, ctx.conditional().ex());
+            blockTrue = Block.recognize(contextFunction, scope, ctx.conditional().block().get(0));
+            blockFalse = Block.recognize(contextFunction, scope, ctx.conditional().block().get(1));
+
+            if(ex.type == Type.STRING) {
+                Recover.type(
+                    contextFunction.name + ": condition cannot be string"
+                );
+            }
+        } else if(ctx.iteration() != null) {
+            option = Option.ITERATION;
+            ex = Expression.recognize(contextFunction, scope, ctx.iteration().ex());
+            blockTrue = Block.recognize(contextFunction, scope, ctx.iteration().block());
+
+            if(ex.type == Type.STRING) {
+                Recover.type(
+                    contextFunction.name + ": condition cannot be string"
+                );
+            }
+        } else if(ctx.call() != null) {
+            option = Option.CALL;
+            call = Call.recognize(contextFunction, scope, ctx.call());
+        } else if(ctx.returnStatement() != null) {
+            option = Option.RETURN;
+            if(ctx.returnStatement().ex() != null) {
+                ex = Expression.recognize(contextFunction, scope, ctx.returnStatement().ex());
+            }
+
+            if(ex == null) {
+                if(contextFunction.type != Type.VOID) {
+                    Recover.type(contextFunction.name + ": return statement cannot be empty here");
+                }
+            } else {
+                Type f = contextFunction.type;
+                Type e = ex.type;
+                if(f != e) {
+                    if(!(f instanceof Class) || !(e instanceof Class)) {
+                        Recover.type(contextFunction.name + ": return type mismatch");
+                    } else if(!(((Class) e).isSubclassOf((Class) f))) {
+                        Recover.type(contextFunction.name + ": return type mismatch");
+                    }
+                }
+            }
+        } else {
+            assert false;
         }
+
+        // Assemble and return
+        s.contextFunction = contextFunction;
+        s.option = option;
+        s.ex = ex;
+        s.path = path;
+        s.blockTrue = blockTrue;
+        s.blockFalse = blockFalse;
+        s.call = call;
         list.add(s);
         return list;
     }
 
+    /** Parse a block of statements. */
     public static List<Statement> recognize(
-        Function context, SymbolTable<Variable> scope, GrammarParser.BlockContext ctx
+        Function contextFunction, SymbolTable<Variable> scope,
+        GrammarParser.BlockContext ctx
     ) {
         List<Statement> list = new ArrayList<>();
-        ctx.statement().forEach(s -> list.addAll(Statement.recognize(context, scope, s)));
+        ctx.statement().forEach(
+            sctx -> list.addAll(Statement.recognize(contextFunction, scope, sctx))
+        );
         return list;
+    }
+
+    /* ************************************************************************/
+
+    /** Indexate the statement. */
+    public void indexate() {
+        if(declared != null) {
+            declared.indexate(contextFunction.nextVariableIndex());
+            return;
+        }
+        
+        if(blockTrue != null) {
+            blockTrue.indexate();
+            if(blockFalse != null) {
+                blockFalse.indexate();
+            }
+        }
     }
 }

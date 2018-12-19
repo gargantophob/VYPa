@@ -1,3 +1,8 @@
+/*
+ * VYPa 2018 - VYPcode compiler.
+ * Roman Andriushchenko (xandri03)
+ */
+
 package main;
 
 import parser.GrammarParser;
@@ -5,8 +10,10 @@ import parser.GrammarParser;
 import java.util.List;
 import java.util.ArrayList;
 
+/** Expression. */
 public class Expression {
     
+    /** Expression types. */
     public static enum Option {
         LITERAL, PATH, NEW, INT2STRING, CAST, CALL,
         NEG, MULI, DIVI, ADDI, ADDS, SUBI,
@@ -14,22 +21,167 @@ public class Expression {
         AND, OR
     }
 
-    public Function context;
-    public SymbolTable<Variable> scope;
-
+    /** Expression type. */
     public Option option;
 
+    /** Immediate operand. */
     public Literal literal;
+    /** Path. */
     public Path path;
+    /** Object creation. */
     public Class classNew;
-    public Type typeCast;
+    /** Class cast. */
+    public Type classCast;
+    /** Function call. */
     public Call call;
 
+    /** Operand 1.*/
     public Expression op1;
+    /** Operand 2.*/
     public Expression op2;
 
+    /** Inferred type. */
     public Type type;
-    
+
+    /** Create literal expression. */
+    public Expression(Literal literal) {
+        option = Option.LITERAL;
+        this.literal = literal;
+        type = literal.type;
+    }
+
+    /** Create path expression.*/
+    public Expression(Path path) {
+        option = Option.PATH;
+        this.path = path;
+        type = path.type;
+    }
+
+    /** Create cast expression. */
+    public Expression(Type type, Expression op) {
+        op1 = op;
+
+        // can convert int to string or (dynamically) class to class
+        if(type == Type.STRING && op.type == Type.INT) {
+            option = Option.INT2STRING;
+        } else if(type instanceof Class && op.type instanceof Class) {
+            option = Option.CAST;
+            this.classCast = classCast;
+        } else {
+            Recover.type("invalid cast");
+        }
+        this.type = type;
+    }
+
+    /** Create object creation. */
+    public Expression(Class classNew) {
+        option = Option.NEW;
+        this.classNew = classNew;
+        type = classNew;
+    }
+
+    /** Create expression call. */
+    public Expression(Call call) {
+        option = Option.CALL;
+        this.call = call;
+        if(call.type == Type.VOID) {
+            Recover.type("call returns void and cannot be an expression");
+        }
+        type = call.type;
+    }
+
+    /** Create unary negation. */
+    public Expression(Expression op) {
+        option = Option.NEG;
+        op1 = op;
+
+        if(op.type == Type.STRING) {
+            Recover.type("only integer and objects can be negated");
+        }
+        type = Type.INT;
+    }
+
+    /** Create binary operation. */
+    public Expression(Option option, Expression op1, Expression op2) {
+        this.op1 = op1;
+        this.op2 = op2;
+
+        Type t1 = op1.type;
+        Type t2 = op2.type;
+        
+        boolean bothInt = (t1 == Type.INT) && (t2 == Type.INT);
+        boolean bothString = (t1 == Type.STRING) && (t2 == Type.STRING);
+        boolean bothClass = (t1 instanceof Class) && (t2 instanceof Class);
+        type = t1;
+
+        switch(option) {
+            case MULI:
+            case DIVI:
+                if(!bothInt) {
+                    Recover.type("only integers can be multiplied/divided");
+                }
+                break;
+            case ADDI:
+                if(bothInt) {
+                } else if(bothString) {
+                    option = Option.ADDS;
+                } else {
+                    Recover.type("addition type mismatch");
+                }
+                break;
+            case SUBI:
+                if(!bothInt) {
+                    Recover.type("only integers can be subtracted");
+                }
+                break;
+            case LTI:
+                type = Type.INT;
+                if(bothInt) {
+                } else if(bothString) {
+                    option = Option.LTS;
+                } else {
+                    Recover.type("relation operator type mismatch");
+                }
+                break;
+            case GTI:
+                type = Type.INT;
+                if(bothInt) {
+                } else if(bothString) {
+                    option = Option.GTS;
+                } else {
+                    Recover.type("relation operator type mismatch");
+                }
+                break;
+            case EQI:
+                type = Type.INT;
+                if(bothString) {
+                    option = Option.EQS;
+                } else if(t1 != t2 && !bothClass) {
+                    Recover.type("relation operator type mismatch");
+                }
+                break;
+            case NEQI:
+                type = Type.INT;
+                if(bothString) {
+                    option = Option.NEQS;
+                } else if(t1 != t2 && !bothClass) {
+                    Recover.type("relation operator type mismatch");
+                }
+                break;
+            case AND:
+            case OR:
+                type = Type.INT;
+                if(t1 == Type.STRING || t2 != Type.STRING) {
+                } else {
+                    Recover.type("cannot apply logical operators on string");
+                }
+            break;
+        }
+
+        this.option = option;
+    }
+
+    /** Parse expression context. */    
     public static Expression recognize(
         Function context, SymbolTable<Variable> scope, GrammarParser.ExContext ctx
     ) {
@@ -40,9 +192,7 @@ public class Expression {
 
         if(ctx.arguments() != null) {
             // call
-            return new Expression(
-                context, scope, Call.recognize(context, scope, ctx)
-            );
+            return new Expression(Call.recognize(context, scope, ctx));
         }
 
         if(ctx.value() != null) {
@@ -51,40 +201,36 @@ public class Expression {
             if(valueContext.literal() != null) {
                 // literal
                 return new Expression(
-                    context, scope, new Literal(valueContext.literal())
+                    Literal.recognize(valueContext.literal())
                 );
             } else {
                 // path
                 return new Expression(
-                    context, scope, new Path(context, scope, valueContext.path())
+                    Path.recognize(context, scope, valueContext.path())
                 );
             }
         }
 
         if(ctx.type() != null) {
             // cast
-            Type typeCast = Type.recognize(ctx.type());
+            Type type = Type.recognize(ctx.type());
             Expression op = recognize(context, scope, ctx.ex().get(0));
-            if(typeCast == op.type) {
+            if(type == op.type) {
                 // identity cast
                 return op;
             } else {
-                return new Expression(context, scope, typeCast, op);
+                return new Expression(type, op);
             }
         }
 
         if(ctx.name() != null) {
             // new
-            return new Expression(
-                context, scope, SymbolTable.classes.lookUp(ctx.name().getText())
-            );
+            return new Expression(Class.table.lookUp(ctx.name().getText()));
         }
 
         if(ctx.ex().size() == 1) {
             // negation
-            return new Expression(
-                context, scope, recognize(context, scope, ctx.ex().get(0))
-            );
+            return new Expression(recognize(context, scope, ctx.ex().get(0)));
         }
 
         // binary operation
@@ -102,13 +248,13 @@ public class Expression {
             case "<": option = Option.LTI; break;
             case ">": option = Option.GTI; break;
             case "<=": 
-                op1 = new Expression(context, scope, Option.LTI, tmp1, tmp2);
-                op2 = new Expression(context, scope, Option.EQI, tmp1, tmp2);
+                op1 = new Expression(Option.LTI, tmp1, tmp2);
+                op2 = new Expression(Option.EQI, tmp1, tmp2);
                 option = Option.OR;
                 break;
             case ">=":
-                op1 = new Expression(context, scope, Option.GTI, tmp1, tmp2);
-                op2 = new Expression(context, scope, Option.EQI, tmp1, tmp2);
+                op1 = new Expression(Option.GTI, tmp1, tmp2);
+                op2 = new Expression(Option.EQI, tmp1, tmp2);
                 option = Option.OR;
                 break;
             case "==": option = Option.EQI; break;
@@ -116,182 +262,6 @@ public class Expression {
             case "&&": option = Option.AND; break;
             case "||": option = Option.OR; break;
         }
-        return new Expression(context, scope, option, op1, op2);        
-    }
-
-    public Expression(
-        Function context, SymbolTable<Variable> scope,
-        Literal literal
-    ) {
-        this.context = context;
-        this.scope = scope;
-
-        option = Option.LITERAL;
-        this.literal = literal;
-        type = literal.type;
-    }
-
-    public Expression(
-        Function context, SymbolTable<Variable> scope,
-        Path path
-    ) {
-        this.context = context;
-        this.scope = scope;
-
-        option = Option.PATH;
-        this.path = path;
-        type = path.type;
-    }
-
-    public Expression(
-        Function context, SymbolTable<Variable> scope,
-        Type typeCast, Expression op
-    ) {
-        this.context = context;
-        this.scope = scope;
-
-        this.typeCast = typeCast;
-        this.type = typeCast;
-        op1 = op;
-
-        // can convert int to string or (dynamically) class to class
-        if(typeCast == Type.STRING && op.type == Type.INT) {
-            option = Option.INT2STRING;
-        } else if(typeCast instanceof Class && op.type instanceof Class) {
-            option = Option.CAST;
-        } else {
-            Recover.type(context.name + ": invalid cast");
-        }
-    }
-
-    public Expression(
-        Function context, SymbolTable<Variable> scope,
-        Class classNew
-    ) {
-        this.context = context;
-        this.scope = scope;
-
-        option = Option.NEW;
-        this.classNew = classNew;
-        type = classNew;
-    }
-
-    public Expression(
-        Function context, SymbolTable<Variable> scope,
-        Call call
-    ) {
-        this.context = context;
-        this.scope = scope;
-
-        option = Option.CALL;
-        this.call = call;
-        if(call.type == Type.VOID) {
-            Recover.type(
-                context.name + ": " + call.function.name +
-                " call returns void and cannot be an expression"
-            );
-        }
-        type = call.type;
-    }
-
-    public Expression(
-        Function context, SymbolTable<Variable> scope,
-        Expression op
-    ) {
-        this.context = context;
-        this.scope = scope;
-
-        option = Option.NEG;
-        op1 = op;
-
-        if(op.type == Type.STRING) {
-            Recover.type(context.name + ": only integer and objects can be negated");
-        }
-        type = Type.INT;
-    }
-
-    public Expression(
-        Function context, SymbolTable<Variable> scope,
-        Option option, Expression op1, Expression op2
-    ) {
-        this.context = context;
-        this.scope = scope;
-        this.op1 = op1;
-        this.op2 = op2;
-
-        Type t1 = op1.type;
-        Type t2 = op2.type;
-        
-        boolean bothInt = (t1 == Type.INT) && (t2 == Type.INT);
-        boolean bothString = (t1 == Type.STRING) && (t2 == Type.STRING);
-        boolean bothClass = (t1 instanceof Class) && (t2 instanceof Class);
-        type = t1;
-
-        switch(option) {
-            case MULI:
-            case DIVI:
-                if(!bothInt) {
-                    Recover.type(context.name + ": only integers can be multiplied/divided");
-                }
-                break;
-            case ADDI:
-                if(bothInt) {
-                } else if(bothString) {
-                    option = Option.ADDS;
-                } else {
-                    Recover.type(context.name + ": addition type mismatch");
-                }
-                break;
-            case SUBI:
-                if(!bothInt) {
-                    Recover.type(context.name + ": only integers can be subtracted");
-                }
-                break;
-            case LTI:
-                type = Type.INT;
-                if(bothInt) {
-                } else if(bothString) {
-                    option = Option.LTS;
-                } else {
-                    Recover.type(context.name + ": relation operator type mismatch");
-                }
-                break;
-            case GTI:
-                type = Type.INT;
-                if(bothInt) {
-                } else if(bothString) {
-                    option = Option.GTS;
-                } else {
-                    Recover.type(context.name + ": relation operator type mismatch");
-                }
-                break;
-            case EQI:
-                type = Type.INT;
-                if(bothString) {
-                    option = Option.EQS;
-                } else if(t1 != t2 && !bothClass) {
-                    Recover.type(context.name + ": relation operator type mismatch");
-                }
-                break;
-            case NEQI:
-                type = Type.INT;
-                if(bothString) {
-                    option = Option.NEQS;
-                } else if(t1 != t2 && !bothClass) {
-                    Recover.type(context.name + ": relation operator type mismatch");
-                }
-                break;
-            case AND:
-            case OR:
-                type = Type.INT;
-                if(t1 == Type.STRING || t2 != Type.STRING) {
-                } else {
-                    Recover.type(context.name + ": cannot apply logical operators on string");
-                }
-            break;
-        }
-
-        this.option = option;
-    }
-
+        return new Expression(option, op1, op2);        
+    }    
 }

@@ -1,3 +1,7 @@
+/*
+ * VYPa 2018 - VYPcode compiler.
+ * Roman Andriushchenko (xandri03)
+ */
 package main;
 
 import parser.GrammarParser;
@@ -8,35 +12,36 @@ import java.util.ArrayList;
 
 public class Literal {
 
+    /** Literal type, either INT or STRING. */
     public Type type;
+    /** Text payload. */
     public String text;
+    /** Integer value for integer literals. */
     public int intValue;
 
-    public Literal(GrammarParser.LiteralContext ctx) {
+    /** Construct a literal. */
+    public Literal(Type type, String text, int intValue) {
+        this.type = type;
+        this.text = text;
+        this.intValue = intValue;
+    }
+
+    /** Parse a literal context. */
+    public static Literal recognize(GrammarParser.LiteralContext ctx) {
         Token token = (Token) ctx.getChild(0).getPayload();
-        text = token.getText();
         
-        if(token.getType() == GrammarParser.IntegerLiteral) {
-            type = Type.INT;
+        String text = token.getText();
+        Type type = token.getType() == GrammarParser.IntegerLiteral ? Type.INT : Type.STRING;
+        int intValue = 0;
+        
+        if(type == Type.INT) {
             try {
                 intValue = Integer.parseInt(text);
             } catch(NumberFormatException e) {
                 Recover.internal("string to integer conversion failed");
             }
-        } else {
-            type = Type.STRING;
-            // text = text.substring(1, text.length()-1); // removes quotes
         }
-    }
 
-    /*public Literal(int intValue) {
-        type = Type.INT;
-        text = "" + intValue; // FIXME
-        this.intValue = intValue;
+        return new Literal(type, text, intValue);
     }
-
-    public Literal(String text) {
-        type = Type.STRING;
-        this.text = text;
-    }*/
 }

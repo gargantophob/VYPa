@@ -2,8 +2,8 @@ grammar Grammar;
 
 /* Parser Rules */
 
-type	:	Void | Int | String | name;
 name	:	Id;
+type	:	Void | Int | String | name;
 atomicPath	:	This | name;
 path	:	atomicPath ('.' atomicPath)*;
 

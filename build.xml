@@ -14,7 +14,7 @@
 	<property	name="doc.dir"	value="doc"/>
 
 	<property	name="input.file"	value="input"/>
-	<property	name="output.file"	value="output"/>
+	<property	name="output.file"	value="out.vc"/>
 
 	<!-- Program entry point. -->
 	<property	name="main-package"	value="main"/>
@@ -27,8 +27,6 @@
 	<property	name="antlr-class"		value="org.antlr.v4.Tool"/>
 	<property	name="antlr-grammar"	value="Grammar"/>
 	<property	name="antlr-package"	value="parser"/>
-
-
 
 	<!-- Targets -->
 
