@@ -5,7 +5,9 @@
 
 package main;
 
-/** Object with a name. */
+/**
+ * Entity with a name for symbol table inclusion.
+ */
 public interface Named {
 	public String name();
 }

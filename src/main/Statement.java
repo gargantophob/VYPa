@@ -10,6 +10,9 @@ import parser.GrammarParser;
 import java.util.List;
 import java.util.ArrayList;
 
+/**
+ * Statement.
+ */
 public class Statement {
 
     /** Statement type. */
@@ -193,6 +196,101 @@ public class Statement {
             if(blockFalse != null) {
                 blockFalse.indexate();
             }
+        }
+    }
+
+    /* ************************************************************************/
+
+    /** Generate the code. */
+    public void code() {
+        if(option == Option.DECLARATION) {
+            // Set default value
+            if(declared.type == Type.STRING) {
+            	Code.println("SET " + declared.code() + " \"\"");
+            } else {
+            	Code.println("SET " + declared.code() + " 0");
+            }
+            return;
+        }
+
+
+        if(option == Option.ASSIGNMENT) {
+            // Push RHS onto stack
+            ex.code(contextFunction);
+
+            if(path.path.size() == 1) {
+                // Simple-path assignment
+                Code.pop(path.path.get(0));
+                return;
+            }
+
+            // Evaluate composite path first
+            List<Variable> vars = path.path;
+
+            // Store handle address to $R
+            Code.println("SET $R " + vars.get(0).code());
+
+            // Store to $R addresses of attributes (up to the last one)
+            for(int i = 1; i < vars.size()-1; i++) {
+                Code.println("GETWORD $R $R " + (vars.get(i).index+1));
+            }
+
+            // Set the last attribute
+            Code.println("SETWORD $R " + (vars.get(vars.size()-1).index+1) + " [$SP]");
+            Code.println("SUBI $SP $SP 1");
+            return;
+        }
+
+
+        if(option == Option.CONDITIONAL) {
+            String labelElse = contextFunction.newLabel();
+            String labelEndIf = contextFunction.newLabel();
+            
+            // Evaluate condition to $R
+            ex.code(contextFunction);
+            Code.pop("$R");
+
+            // Branch
+            Code.println("JUMPZ " + labelElse + " $R");
+            blockTrue.code();
+            Code.println("JUMP " + labelEndIf);
+            Code.label(labelElse);
+            blockFalse.code();
+            Code.label(labelEndIf);
+
+            return;
+        }
+
+        if(option == Option.ITERATION) {
+            String labelWhile = contextFunction.newLabel();
+            String labelEndWhile = contextFunction.newLabel();
+
+            // Loop
+            Code.label(labelWhile);
+
+            // Evaluate condition to $R
+            ex.code(contextFunction);
+            Code.pop("$R");
+            Code.println("JUMPZ " + labelEndWhile + " $R");
+            blockTrue.code();
+            Code.println("JUMP " + labelWhile);
+            Code.label(labelEndWhile);
+
+            return;
+        }
+
+        if(option == Option.CALL) {
+            call.code();
+            return;
+        }
+
+        if(option == Option.RETURN) {
+            if(ex != null) {
+                ex.code(contextFunction);
+                Code.pop("$RET");
+            }
+            Code.returnVoid();
+            return;
         }
     }
 }

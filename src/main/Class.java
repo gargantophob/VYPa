@@ -300,13 +300,49 @@ public class Class extends Type implements Named {
         }
         return base.lookUpMethod(index);
     }
+    
+    /* ********************************************************************** */
 
-    /** Create a list of all methods for this class. */
-    public List<Function> VMT() {
-        List<Function> list = new ArrayList<>();
+    /** Generate code for VMT initialization. */
+    public void codeVMT() {
+    	Code.comment("VMT of " + name + ":");
+        Code.println("CREATE $R " + methodIndex);
         for(int i = 0; i < methodIndex; i++) {
-            list.add(lookUpMethod(i));
+            Function f = lookUpMethod(i);
+            Code.println("SETWORD $R " +  f.index + " " + "\"" + f.label() + "\"");
         }
-        return list;
+        Code.println("SETWORD $VMT " + index + " $R");
+    }
+
+    /** Create a new instance variable and push its address onto stack. */
+    public void codeNew() {
+    	// Allocate
+        Code.println("CREATE $R " + (attributeIndex+1));
+
+        // Set pointer to VMT
+        Code.println("GETWORD $3 $VMT " + index);
+        Code.println("SETWORD $R 0 $3");
+
+        // Call constructor
+        Code.push("$FP");
+        Code.push("$R");
+        Code.println("ADDI $SP $SP 1");
+        Code.println("CALL [$SP] " + name + "::" + name);
+        Code.println("SUBI $SP $SP 1");
+        Code.pop("$R");
+        Code.pop("$FP");
+
+        // Push reference to stack
+        Code.push("$R");
+    }
+
+    /** Genereate a code for individual methods. */
+    public void code() {
+    	Code.separator();
+    	Code.separator();
+    	Code.comment("Class " + name + ":");
+	  	methods.values().forEach(f -> f.code());
+    	Code.comment("End of class " + name);
+    	Code.newline();
     }
 }

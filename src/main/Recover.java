@@ -6,7 +6,7 @@
 package main;
 
 /**
- * Recover procedures.
+ * Recover and debug procedures.
  */
 public class Recover {
     /** Print {@code msg} (if not null) to standard error output. */
@@ -57,14 +57,14 @@ public class Recover {
         exit(9, msg);
     }
 
-    /* Auxiliary procedures. */
+    /* Debug procedures. */
 
     public static void here() {
         print("HERE");
     }
     
     public static void warn(String msg) {
-        print("Something went wrong: " + msg);
+        print("!!!: " + msg);
     }    
 
     public static void notImplemented() {

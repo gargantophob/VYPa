@@ -13,8 +13,10 @@ import java.util.ArrayList;
  * Variable declaration.
  */
 public class Variable implements Named {
-    
+
+    /** Variable type. */    
     public Type type;
+    /** Variable name. */
     public String name;
     
     /** Construct a variable. */
@@ -49,10 +51,19 @@ public class Variable implements Named {
     
     /* ************************************************************************/
     
+    /** Variable index. */
     public int index;
 
+    /** Indexate the variable. */
     public void indexate(int index) {
-        System.err.println(name + " : " + index);
         this.index = index;
+    }
+
+    /**
+     * Treat the variable as a local one and generate its access via
+     * the framepointer.
+     */
+    public String code() {
+        return String.format("[$FP%+d]", index);
     }
 }

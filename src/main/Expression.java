@@ -31,7 +31,7 @@ public class Expression {
     /** Object creation. */
     public Class classNew;
     /** Class cast. */
-    public Type classCast;
+    public Class classCast;
     /** Function call. */
     public Call call;
 
@@ -66,7 +66,7 @@ public class Expression {
             option = Option.INT2STRING;
         } else if(type instanceof Class && op.type instanceof Class) {
             option = Option.CAST;
-            this.classCast = classCast;
+            this.classCast = (Class) type;
         } else {
             Recover.type("invalid cast");
         }
@@ -228,13 +228,13 @@ public class Expression {
             return new Expression(Class.table.lookUp(ctx.name().getText()));
         }
 
+        Expression op1 = recognize(context, scope, ctx.ex().get(0));
         if(ctx.ex().size() == 1) {
             // negation
-            return new Expression(recognize(context, scope, ctx.ex().get(0)));
+            return new Expression(op1);
         }
 
         // binary operation
-        Expression op1 = recognize(context, scope, ctx.ex().get(0));
         Expression op2 = recognize(context, scope, ctx.ex().get(1));
         Expression tmp1 = op1;
         Expression tmp2 = op2;
@@ -263,5 +263,143 @@ public class Expression {
             case "||": option = Option.OR; break;
         }
         return new Expression(option, op1, op2);        
-    }    
+    }
+
+    /* ************************************************************************/
+
+    /** Evaluate expression and push result onto stack. */
+    public void code(Function contextFunction) {
+        if(option == Expression.Option.LITERAL) {
+            literal.code();
+            return;
+        }
+
+        if(option == Expression.Option.PATH) {
+            path.code();
+            return;
+        }
+
+        if(option == Expression.Option.NEW) {
+            classNew.codeNew();
+            return;
+        }
+
+        if(option == Expression.Option.CALL) {
+            call.code();
+            Code.push("$RET");
+            return;
+        }
+        
+        // Unary or binary operations
+        op1.code(contextFunction);
+
+        if(option == Expression.Option.INT2STRING) {
+            Code.println("INT2STRING $R [$SP]");
+            Code.println("SET [$SP] $R");
+            return;
+        }
+
+        if(option == Expression.Option.CAST) {
+            // Try to access the constructor of the casting class
+            // NOTE: THIS WILL NOT WORK PROPERLY
+            Code.println("GETWORD $R [$SP] 0");
+            Function f = classCast.lookUpMethod(classCast.name);
+            Code.println("GETWORD $R $R " + f.index);
+            return;
+        }
+
+        if(option == Expression.Option.NEG) {
+            Code.println("NOT $R [$SP]");
+            Code.println("SET [$SP] $R");
+        }
+        
+        // Binary operations
+        op2.code(contextFunction);
+        String opcode = null;
+        // TODO string deallocation?
+        switch(option) {
+            case MULI: opcode = "MULI"; break;
+            case DIVI: opcode = "DIVI"; break;
+            case ADDI: opcode = "ADDI"; break;
+            case ADDS:
+                // $1 = s1.length();
+                // $2 = s2.length();
+                // $4 = $1 + $2;
+                Code.println("GETSIZE $1 [$SP-1]");
+                Code.println("GETSIZE $2 [$SP]");
+                Code.println("ADDI $4 $1 $2");
+
+                // $3 = copy(s1);
+                // $3 = realloc($4);
+                Code.println("COPY $3 [$SP-1]");
+                Code.println("RESIZE $3 $4");
+
+                // $4 = 0;
+                // while($4 < $1) {
+                //   $5 = [[$SP-1]+$4]
+                //   [$3+$4] = ;
+                //   $4 = $4 + 1;
+                // }
+
+                Code.println("SET $4 0");
+                String labelWhile = contextFunction.newLabel();
+                String labelEndWhile = contextFunction.newLabel();
+                Code.label(labelWhile);
+                Code.println("SUBI $5 $1 $4");
+                Code.println("JUMPZ " + labelEndWhile + " $5");
+                Code.println("GETWORD $5 [$SP-1] $4");
+                Code.println("SETWORD $3 $4 $5");
+                Code.println("ADDI $4 $4 1");
+                Code.println("JUMP " + labelWhile);
+                Code.label(labelEndWhile);
+
+                // $4 = 0;
+                // while($4 < $2) {
+                //   $5 = $1 + $4
+                //   $5 = [[$SP-1]+$5]
+                //   [$3+$4] = ;
+                //   $4 = $4 + 1;
+                // }
+
+                Code.println("SET $4 0");
+                String labelWhile2 = contextFunction.newLabel();
+                String labelEndWhile2 = contextFunction.newLabel();
+                Code.label(labelWhile2);
+                Code.println("SUBI $5 $2 $4");
+                Code.println("JUMPZ " + labelEndWhile2 + " $5");
+                Code.println("ADDI $5 $1 $4");
+                Code.println("GETWORD $6 [$SP] $4");
+                Code.println("SETWORD $3 $5 $6");
+                Code.println("ADDI $4 $4 1");
+                Code.println("JUMP " + labelWhile2);
+                Code.label(labelEndWhile2);
+
+                // $R = $3
+                Code.println("SET $R $3");
+                break;
+            case SUBI: opcode = "SUBI"; break;
+            case LTI: opcode = "LTI"; break;
+            case GTI: opcode = "GTI"; break;
+            case EQI: opcode = "EQI"; break;
+            case NEQI:
+                Code.println("EQI $R [$SP-1] [$SP]");
+                Code.println("NOT $R $R");
+                break;
+            case LTS: opcode = "LTS"; break;
+            case GTS: opcode = "GTS"; break;
+            case EQS: opcode = "EQS"; break;
+            case NEQS:
+                Code.println("EQS $R [$SP-1] [$SP]");
+                Code.println("NOT $R $R");
+                break;
+            case AND: opcode = "AND"; break;
+            case OR: opcode = "OR"; break;
+        }
+
+        if(opcode != null) {
+            Code.println(opcode + " $R [$SP-1] [$SP]");
+        }
+        Code.println("SUBI $SP $SP 1");
+        Code.println("SET [$SP] $R");
+    }
 }

@@ -12,21 +12,16 @@ import java.util.Set;
 import java.util.Collection;
 
 /**
- * Generic symbol table.
+ * Symbol table of named entities.
  */
 public class SymbolTable<T extends Named> {
 
-	/** name -> object mapping. */
-	public Map<String,T> symbols;
+	/** name |-> object mapping. */
+	protected Map<String,T> symbols;
 	
 	/** Initialize a symbol table. */
 	public SymbolTable() {
 		symbols = new HashMap<>();
-	}
-
-	/** Retreive set of keys. */
-	public Set<String> names() {
-		return symbols.keySet();
 	}
 	
 	/** Retreive set of values. */
@@ -53,15 +48,10 @@ public class SymbolTable<T extends Named> {
         }
 	}
 
-	/** Register a symbol. */
+	/** Register new symbol. */
 	public void register(T t) {
 		assertNonExistence(t.name());
 		symbols.put(t.name(), t);
-	}
-
-	/** Remove a symbol. */
-	public void remove(String name) {
-		symbols.remove(name);
 	}
 
 	/** Look up a symbol. */

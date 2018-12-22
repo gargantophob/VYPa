@@ -10,38 +10,43 @@ import org.antlr.v4.runtime.Token;
 import java.util.List;
 import java.util.ArrayList;
 
+/**
+ * Integer or string literal.
+ */
 public class Literal {
 
     /** Literal type, either INT or STRING. */
     public Type type;
-    /** Text payload. */
+    /** Text representation. */
     public String text;
-    /** Integer value for integer literals. */
-    public int intValue;
 
-    /** Construct a literal. */
-    public Literal(Type type, String text, int intValue) {
+    /** Construct a literal of default value. */
+    public Literal(Type type) {
         this.type = type;
-        this.text = text;
-        this.intValue = intValue;
+        text = type == Type.STRING ? "\"\"" : "0";
     }
 
-    /** Parse a literal context. */
+    /** Construct a literal. */
+    public Literal(Type type, String text) {
+        this.type = type;
+        this.text = text;
+    }
+
+    /** Parse literal context. */
     public static Literal recognize(GrammarParser.LiteralContext ctx) {
         Token token = (Token) ctx.getChild(0).getPayload();
-        
         String text = token.getText();
-        Type type = token.getType() == GrammarParser.IntegerLiteral ? Type.INT : Type.STRING;
-        int intValue = 0;
-        
-        if(type == Type.INT) {
-            try {
-                intValue = Integer.parseInt(text);
-            } catch(NumberFormatException e) {
-                Recover.internal("string to integer conversion failed");
-            }
+        Type type;
+        if(token.getType() == GrammarParser.IntegerLiteral) {
+            type = Type.INT;
+        } else {
+            type = Type.STRING;
         }
+        return new Literal(type, text);
+    }
 
-        return new Literal(type, text, intValue);
+    /** Push literal value (its text representation) onto stack. */
+    public void code() {
+        Code.push(text);
     }
 }
