@@ -1,2 +1,2 @@
 all:
-	ant antlr; ant compile;
+	ant antlr; ant compile; chmod +x vypcomp;

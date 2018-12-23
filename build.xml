@@ -28,6 +28,9 @@
 	<property	name="antlr-grammar"	value="Grammar"/>
 	<property	name="antlr-package"	value="parser"/>
 
+	<!-- Submition. -->
+	<property	name="zip.name"	value="xandri03.zip"/>
+
 	<!-- Targets -->
 
 	<!-- Clean all directories. -->
@@ -95,6 +98,11 @@
 			destdir="${doc.dir}"
 			protected="true"
 		/>
+	</target>
+
+	<!-- zip -->
+	<target name="zip">
+		<zip destfile="${zip.name}" basedir="."/>
 	</target>
 
 </project>
