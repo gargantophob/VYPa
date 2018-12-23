@@ -81,7 +81,7 @@
 				<pathelement path="${cls.dir}"/>
         		<pathelement path="${antlr-path}"/>
 			</classpath>
-			<jvmarg value="-ea"/>
+			<!-- <jvmarg value="-ea"/> -->
 			<arg value="${input.file}"/>
 			<arg value="${output.file}"/>
 		</java>

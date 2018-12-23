@@ -15,6 +15,8 @@ public class Code {
     
     /** String builder containing target code. */
     private static StringBuilder sb;
+    /** If true, comments will be generated. */
+    private static boolean commentsEnabled = false;
     
     /** Reset code generation. */
     public static void reset() {
@@ -39,7 +41,9 @@ public class Code {
 
     /** Print comment. */
     public static void comment(String str) {
-    	println("# " + str);
+        if(commentsEnabled) {
+    	   println("# " + str);
+        }
     }
 
     /** Print separator.*/

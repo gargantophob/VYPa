@@ -87,7 +87,7 @@ public class Program {
         	Function.table.register(Function.recognize(ctx));
 		});
 
-        // Process all global functions definitions
+        // Process all global functions declarations
         Function.table.values().forEach(f -> f.initialize());
 
         // Look up "main" and check its signature
